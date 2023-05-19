@@ -414,7 +414,8 @@ class LocalizationSensor(UsesArticulatedAgentInterface, Sensor):
 
     def get_observation(self, observations, episode, *args, **kwargs):
         articulated_agent = self._sim.get_agent_data(
-            self.agent_id
+            #self.agent_id
+            1
         ).articulated_agent
         T = articulated_agent.base_transformation
         forward = np.array([1.0, 0, 0])
@@ -1113,12 +1114,12 @@ class HasFinishedOracleNavSensor(UsesArticulatedAgentInterface, Sensor):
 
 
 @registry.register_sensor
-class SocialRobotSuccessSensor(UsesArticulatedAgentInterface, Sensor):
+class HumanLocalizationSensor(UsesArticulatedAgentInterface, Sensor):
     """
-    The position and angle of the articulated_agent in world coordinates.
+    Receives last human posture from localization sensor and 
     """
 
-    cls_uuid = "localization_sensor"
+    cls_uuid = "human_localization_sensor"
 
     def __init__(self, sim, config, *args, **kwargs):
         super().__init__(config=config)
@@ -1140,9 +1141,11 @@ class SocialRobotSuccessSensor(UsesArticulatedAgentInterface, Sensor):
         )
 
     def get_observation(self, observations, episode, *args, **kwargs):
-        import ipdb; ipdb.set_trace()
+        #import ipdb; ipdb.set_trace()
+        #1 is human
         articulated_agent = self._sim.get_agent_data(
-            self.agent_id
+            1
+            #self.agent_id
         ).articulated_agent
         T = articulated_agent.base_transformation
         forward = np.array([1.0, 0, 0])

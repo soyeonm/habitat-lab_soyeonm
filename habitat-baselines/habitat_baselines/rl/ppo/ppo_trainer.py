@@ -942,6 +942,7 @@ class PPOTrainer(BaseRLTrainer):
             and self.envs.num_envs > 0
         ):
             current_episodes_info = self.envs.current_episodes()
+            #breakpoint()
 
             # TODO: make sure this is batched properly
             space_lengths = {}
@@ -952,7 +953,7 @@ class PPOTrainer(BaseRLTrainer):
                     "index_len_prev_actions": action_space_lens,
                 }
             with inference_mode():
-                action_data = self._agent.actor_critic.act(
+                action_data= self._agent.actor_critic.act(
                     batch,
                     test_recurrent_hidden_states,
                     prev_actions,
@@ -960,6 +961,19 @@ class PPOTrainer(BaseRLTrainer):
                     deterministic=False,
                     **space_lengths,
                 )
+                #breakpoint()
+                #Add these as arguments
+                #if "socnav only in config"
+                last_poses = self._agent.actor_critic.get_poses(batch, test_recurrent_hidden_states,
+                    prev_actions,
+                    not_done_masks) #robot_pose, human_pose = self._agent.actor_critic.get_poses(batch)
+                #breakpoint()
+                #Store last poses of human for the robot 
+                self._agent.actor_critic.store_last_human_poses(batch, test_recurrent_hidden_states,
+                    prev_actions,
+                    not_done_masks, last_poses)
+                #success_metrics = self._agent.actor_critic.get_socnav_found_human(last_poses)
+
                 if action_data.should_inserts is None:
                     test_recurrent_hidden_states = (
                         action_data.rnn_hidden_states
@@ -984,6 +998,7 @@ class PPOTrainer(BaseRLTrainer):
                 ]
             else:
                 step_data = [a.item() for a in action_data.env_actions.cpu()]
+            #breakpoint()
             #breakpoint()
             outputs = self.envs.step(step_data)
 
@@ -1012,6 +1027,12 @@ class PPOTrainer(BaseRLTrainer):
                 rewards_l, dtype=torch.float, device="cpu"
             ).unsqueeze(1)
             current_episode_reward += rewards
+
+            #Get soc nav success metrics before next episode is called
+            # with inference_mode():
+            #     success_metrics = self._agent.actor_critic.get_socnav_found_human(last_poses)
+
+
             next_episodes_info = self.envs.current_episodes()
             envs_to_pause = []
             n_envs = self.envs.num_envs

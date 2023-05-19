@@ -108,6 +108,18 @@ class OracleNavPolicy(NnSkillPolicy):
             full_config.habitat.task,
         )
 
+    #Return pose to outside code 
+    def last_agent_pose(self, observations):
+        last_pose = observations[
+            LocalizationSensor.cls_uuid
+        ]
+        #print("Ori!")
+        return last_pose
+
+    def store_last_human_poses(self, last_human_poses):
+        
+
+
     def _is_skill_done(
         self,
         observations,

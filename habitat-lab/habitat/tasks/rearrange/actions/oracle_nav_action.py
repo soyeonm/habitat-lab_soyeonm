@@ -237,6 +237,7 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
                         vel = OracleNavAction._compute_turn(
                             rel_targ, self._config.turn_velocity, robot_forward
                         )
+                    # print("pose inside oracle nav is ", np.array(self.cur_articulated_agent.base_pos))
                 else:
                     vel = [0, 0]
                     self.skill_done = True

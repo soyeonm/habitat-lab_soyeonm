@@ -112,6 +112,14 @@ class OracleNavSocPolicy(NnSkillPolicy):
             full_config.habitat.task,
         )
 
+    #Return pose to outside code 
+    def last_agent_pose(self, observations):
+        last_pose = observations[
+            LocalizationSensor.cls_uuid
+        ]
+        #print("Soc!")
+        return last_pose
+
     def _is_skill_done(
         self,
         observations,
@@ -183,7 +191,7 @@ class OracleNavSocPolicy(NnSkillPolicy):
         )
 
         full_action[:, self._oracle_nav_ac_idx] = action_idxs
-
+        
         return PolicyActionData(
             actions=full_action, rnn_hidden_states=rnn_hidden_states
         )

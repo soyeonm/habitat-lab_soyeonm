@@ -245,6 +245,75 @@ class HierarchicalPolicy(nn.Module, Policy):
             )
         return grouped_skills
 
+    #Only call this if the current skill is robot (oracle_nav, 9.0)
+    def get_socnav_found_human(self, observations, rnn_hidden_states, prev_actions, masks, last_poses):
+        skill_id = self._cur_skills[0].item()
+        grouped_skills = self._broadcast_skill_ids(
+            self._cur_skills,
+            sel_dat={
+                "observations": observations,
+                "rnn_hidden_states": rnn_hidden_states,
+                "prev_actions": prev_actions,
+                "masks": masks,
+            },
+        )
+        #breakpoint()
+        last_human_pose = last_poses['last_human_pose']
+        for skill_id, (batch_ids, batch_dat) in grouped_skills.items():
+            if skill_id == 9.0: #oracle_nav
+                success_last_step = self._skills[skill_id].get_socnav_metrics()
+
+        poses = {}
+        poses["last_robot_pose"] = last_robot_pose
+        poses["last_human_pose"] = last_human_pose
+        return poses
+
+    def store_last_human_poses(self, observations, rnn_hidden_states, prev_actions, masks, last_poses):
+        skill_id = self._cur_skills[0].item()
+        grouped_skills = self._broadcast_skill_ids(
+            self._cur_skills,
+            sel_dat={
+                "observations": observations,
+                "rnn_hidden_states": rnn_hidden_states,
+                "prev_actions": prev_actions,
+                "masks": masks,
+            },
+        )
+        #breakpoint()
+        #last_poses is [{'last_robot_pose': tensor([[-0.4471,  0.0991,  1.5960, -0.6828]]), 'last_human_pose': None}, {'last_robot_pose': None, 'last_human_pose': tensor([[0.1754, 0.0991, 2.3878, 1.3145]])}]
+        last_human_pose = last_poses[1]['last_human_pose']
+        #store this inside oracle_nav
+        for skill_id, (batch_ids, batch_dat) in grouped_skills.items():
+            last_robot_pose = None
+            if skill_id == 9.0: #oracle_nav
+                self._skills[skill_id].store_last_human_poses(last_human_pose)
+            
+
+
+    def get_poses(self, observations, rnn_hidden_states, prev_actions, masks):
+        #get skills
+        skill_id = self._cur_skills[0].item()
+        grouped_skills = self._broadcast_skill_ids(
+            self._cur_skills,
+            sel_dat={
+                "observations": observations,
+                "rnn_hidden_states": rnn_hidden_states,
+                "prev_actions": prev_actions,
+                "masks": masks,
+            },
+        )
+        for skill_id, (batch_ids, batch_dat) in grouped_skills.items():
+            last_robot_pose = None
+            if skill_id == 9.0: #oracle_nav
+                last_robot_pose = self._skills[skill_id].last_agent_pose(observations=batch_dat["observations"])
+            last_human_pose = None
+            if skill_id == 8.0: #oracle_nav_soc
+                last_human_pose = self._skills[skill_id].last_agent_pose(observations=batch_dat["observations"])
+        poses = {}
+        poses["last_robot_pose"] = last_robot_pose
+        poses["last_human_pose"] = last_human_pose
+        return poses
+
     def act(
         self,
         observations,
@@ -289,6 +358,9 @@ class HierarchicalPolicy(nn.Module, Policy):
                 "masks": masks,
             },
         )
+        #breakpoint()
+        #skill_id 9.0 is oracle_nav
+        #skill_id 8.0 is oracle_nav_soc
         #print("grouped skills keys are ", grouped_skills.keys()) #keys are dict_keys([8.0]) for nav
         for skill_id, (batch_ids, batch_dat) in grouped_skills.items():
             action_data = self._skills[skill_id].act(
@@ -298,6 +370,19 @@ class HierarchicalPolicy(nn.Module, Policy):
                 masks=batch_dat["masks"],
                 cur_batch_idx=batch_ids,
             )
+            #print("skill id is ", skill_id)
+            # if hasattr(self._skills[skill_id], 'last_agent_pose'):
+            #     print("Last agent pose was ", self._skills[skill_id].last_agent_pose(observations=batch_dat["observations"]))
+            #print("skill id is ", skill_id)
+            #Call these
+            #if hasattr(self._skills[skill_id], 'last_agent_pose'):
+            last_robot_pose = None
+            if skill_id == 9.0: #oracle_nav
+                last_robot_pose = self._skills[skill_id].last_agent_pose(observations=batch_dat["observations"])
+            last_human_pose = None
+            if skill_id == 8.0: #oracle_nav_soc
+                last_human_pose = self._skills[skill_id].last_agent_pose(observations=batch_dat["observations"])
+
 
             actions[batch_ids] += action_data.actions
             rnn_hidden_states[batch_ids] = action_data.rnn_hidden_states
@@ -328,7 +413,10 @@ class HierarchicalPolicy(nn.Module, Policy):
         action_kwargs = {
             "rnn_hidden_states": rnn_hidden_states,
             "actions": actions,
+
         }
+        # hl_info["last_robot_pose"] = last_robot_pose
+        # hl_info["last_human_pose"] = last_human_pose
         action_kwargs.update(hl_info)
         #print("Act is called")
         #print("stop idx is ", self._stop_action_idx)
