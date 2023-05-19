@@ -21,6 +21,8 @@ from habitat_baselines.rl.hrl.utils import find_action_range
 from habitat_baselines.rl.ppo.policy import PolicyActionData
 
 
+import numpy as np
+
 class OracleNavPolicy(NnSkillPolicy):
     @dataclass
     class OracleNavActionArgs:
@@ -152,21 +154,27 @@ class OracleNavPolicy(NnSkillPolicy):
         self.human_poses.append(human_pose)
         self.robot_poses.append(robot_pose)
 
-    def found_human_at_step(self):
-        pass
+    def found_human_at_step_i(self, i):
+        dist = np.linalg.norm(self.human_poses[i] - self.robot_poses[i])
+        return dist >=1 and dist<= 2 
 
     def get_spl(self, observations):
         path_object = observations[
             GetSPLSensor.cls_uuid
         ]
+        import ipdb; ipdb.set_trace()
         return path_obect
 
-    def compute_metrics(self, observations):
-        path_obj = get_spl(observations)
-        breakpoint()
-
+    def compute_socnav_metrics(self, observations):
+        #path_obj = self.get_spl(observations)
+        #breakpoint()
+        #First just compute success, failure
+        found_human_steps = [self.found_human_at_step_i(i) for i in range(len(self.human_poses))]
+        found_human_at_least_once = sum(found_human_steps ) > 0
+        found_human_rate = sum(found_human_steps ) / float(len(found_human_steps ))
+        #The nu
         #pass
-        pass
+        return found_human_at_least_once, found_human_rate
 
 
     def _is_skill_done(

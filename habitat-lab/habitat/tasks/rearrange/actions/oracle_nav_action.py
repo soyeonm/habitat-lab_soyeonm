@@ -141,6 +141,27 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
             self._targets[nav_to_target_idx] = (start_pos, np.array(obj_pos))
         return self._targets[nav_to_target_idx]
 
+    def path_to_point(self):
+        """
+        Obtain path to reach the coordinate point. If agent_pos is not given
+        the path starts at the agent base pos, otherwise it starts at the agent_pos
+        value
+        :param point: Vector3 indicating the target point
+        """
+        agent_pos = self.cur_articulated_agent.base_pos
+
+        path = habitat_sim.ShortestPath()
+        path.requested_start = agent_pos
+        path.requested_end = agent_pos
+        found_path = self._sim.pathfinder.find_path(path)
+        #print("path.points is ", path.points)
+        #breakpoint()
+        if not found_path:
+            return [agent_pos, point]
+        return path.points
+
+    def call_sim(self):
+        return habitat_sim.ShortestPath(), self._sim
     def _path_to_point(self, point):
         """
         Obtain path to reach the coordinate point. If agent_pos is not given

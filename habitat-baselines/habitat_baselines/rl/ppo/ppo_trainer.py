@@ -1029,9 +1029,11 @@ class PPOTrainer(BaseRLTrainer):
             current_episode_reward += rewards
 
             #Get soc nav success metrics before next episode is called
-            # with inference_mode():
-            #     success_metrics = self._agent.actor_critic.get_socnav_found_human(last_poses)
-
+            with inference_mode():
+                success_metrics = self._agent.actor_critic.compute_socnav_metrics(batch, test_recurrent_hidden_states,
+                    prev_actions,
+                    not_done_masks)
+            #compute_socnav_metrics
 
             next_episodes_info = self.envs.current_episodes()
             envs_to_pause = []

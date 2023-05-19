@@ -68,6 +68,43 @@ class MultiPolicy(Policy):
             
         #return agent_poses
 
+    def compute_socnav_metrics(self, observations,
+        rnn_hidden_states,
+        prev_actions,
+        masks,
+        last_poses,
+        deterministic=False,
+        **kwargs,):
+        n_agents = len(self._active_policies)
+        split_index_dict = self._build_index_split(
+            rnn_hidden_states, prev_actions, kwargs
+        )
+        agent_rnn_hidden_states = rnn_hidden_states.split(
+            split_index_dict["index_len_recurrent_hidden_states"], -1
+        )
+        agent_prev_actions = prev_actions.split(
+            split_index_dict["index_len_prev_actions"], -1
+        )
+        agent_masks = masks.split([1, 1], -1)
+        #agent_actions = []
+        agent_metrics = []
+        for agent_i, policy in enumerate(self._active_policies):
+            agent_obs = self._update_obs_with_agent_prefix_fn(
+                observations, agent_i
+            )
+            agent_poses.append(
+                #policy.act(
+                policy.compute_socnav_metrics(
+                    agent_obs,
+                    agent_rnn_hidden_states[agent_i],
+                    agent_prev_actions[agent_i],
+                    agent_masks[agent_i],
+                    #deterministic,
+                )
+            )
+        return agent_metrics
+
+
 
     def get_socnav_found_human():
         pass

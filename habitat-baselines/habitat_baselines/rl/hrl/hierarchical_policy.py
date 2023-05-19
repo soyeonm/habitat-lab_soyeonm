@@ -289,6 +289,28 @@ class HierarchicalPolicy(nn.Module, Policy):
                 self._skills[skill_id].store_last_human_poses(last_human_pose)
             
 
+    def compute_socnav_metrics(self, observations, rnn_hidden_states, prev_actions, masks):
+        #get skills
+        skill_id = self._cur_skills[0].item()
+        grouped_skills = self._broadcast_skill_ids(
+            self._cur_skills,
+            sel_dat={
+                "observations": observations,
+                "rnn_hidden_states": rnn_hidden_states,
+                "prev_actions": prev_actions,
+                "masks": masks,
+            },
+        )
+        for skill_id, (batch_ids, batch_dat) in grouped_skills.items():
+            last_robot_pose = None
+            if skill_id == 9.0: #oracle_nav
+                metrics = self._skills[skill_id].compute_socnav_metrics(observations=batch_dat["observations"])
+            
+        # poses = {}
+        # poses["last_robot_pose"] = last_robot_pose
+        # poses["last_human_pose"] = last_human_pose
+        return metrics
+
 
     def get_poses(self, observations, rnn_hidden_states, prev_actions, masks):
         #get skills

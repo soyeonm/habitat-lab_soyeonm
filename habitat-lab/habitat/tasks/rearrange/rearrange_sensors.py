@@ -1191,7 +1191,7 @@ class WasResetSensor(UsesArticulatedAgentInterface, Sensor):
                 #raise Exception("Action nonexisistent")
                 return None
         #return np.array(nav_action.was_reset, dtype=np.float32)
-        return np.array(nav_action.counter ==100)#, dtype=np.float32)
+        return np.array(nav_action.counter ==1)#, dtype=np.float32)
 
 @registry.register_sensor
 class GetSPLSensor(UsesArticulatedAgentInterface, Sensor):
@@ -1238,9 +1238,9 @@ class GetSPLSensor(UsesArticulatedAgentInterface, Sensor):
         return path #dist
 
     #def get_observation(self, observations, episode, *args, **kwargs):
-    def get_observation(self):
+    def get_observation(self, observations, episode, *args, **kwargs):
         #self._get_geodesic_distance(human_pose, robot_pos)
-        # self._sim: RearrangeSim
+        self._sim: RearrangeSim
         # T_inv = (
         #     self._sim.get_agent_data(self.agent_id)
         #     .articulated_agent.ee_transform()
@@ -1255,9 +1255,13 @@ class GetSPLSensor(UsesArticulatedAgentInterface, Sensor):
         #     pos[i] = T_inv.transform_point(pos[i])
 
         # return pos.reshape(-1)
-        path = self._sim.ShortestPath()
-
-        return path
+        #breakpoint()
+        #path = self._sim.get_agent_data(0).ShortestPath()
+        #breakpoint()
+        nav_action = self._task.actions["agent_0_oracle_nav_action"]
+        a, b = nav_action.call_sim()
+        #import ipdb; ipdb.set_trace()
+        return a,b  #path
 
     # def get_observation(self, observations, episode, *args, **kwargs):
     #     #print("self.agent_id", self.agent_id)
