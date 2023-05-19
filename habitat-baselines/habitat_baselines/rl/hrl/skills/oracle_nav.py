@@ -12,7 +12,8 @@ from habitat.tasks.rearrange.rearrange_sensors import LocalizationSensor
 from habitat.tasks.rearrange.rearrange_sensors import (
     HasFinishedOracleNavSensor,
     HumanLocalizationSensor,
-    WasResetSensor
+    WasResetSensor,
+    GetSPLSensor
 )
 from habitat_baselines.common.logging import baselines_logger
 from habitat_baselines.rl.hrl.skills.nn_skill import NnSkillPolicy
@@ -151,11 +152,21 @@ class OracleNavPolicy(NnSkillPolicy):
         self.human_poses.append(human_pose)
         self.robot_poses.append(robot_pose)
 
-    def compute_metrics(self):
-        #breakpoint()
-        
+    def found_human_at_step(self):
+        pass
 
+    def get_spl(self, observations):
+        path_object = observations[
+            GetSPLSensor.cls_uuid
+        ]
+        return path_obect
 
+    def compute_metrics(self, observations):
+        path_obj = get_spl(observations)
+        breakpoint()
+
+        #pass
+        pass
 
 
     def _is_skill_done(
@@ -224,7 +235,7 @@ class OracleNavPolicy(NnSkillPolicy):
 
         self.log_poses(observations)
         if self.was_reset(observations):
-            self.compute_metrics()
+            self.compute_metrics(observations)
             self.reset_poses_lists()
 
 

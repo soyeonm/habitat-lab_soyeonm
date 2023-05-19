@@ -1191,5 +1191,90 @@ class WasResetSensor(UsesArticulatedAgentInterface, Sensor):
                 #raise Exception("Action nonexisistent")
                 return None
         #return np.array(nav_action.was_reset, dtype=np.float32)
-        return np.array(nav_action.counter ==1)#, dtype=np.float32)
+        return np.array(nav_action.counter ==100)#, dtype=np.float32)
+
+@registry.register_sensor
+class GetSPLSensor(UsesArticulatedAgentInterface, Sensor):
+    """
+    Receives last human posture from localization sensor and 
+    """
+    cls_uuid = "get_spl_sensor"
+
+    def __init__(self, sim, config, *args, task, **kwargs):
+        self._task = task
+        self._sim = sim
+        super().__init__(config=config)
+
+    def _get_uuid(self, *args, **kwargs):
+        return GetSPLSensor.cls_uuid
+
+    def _get_sensor_type(self, *args, **kwargs):
+        return SensorTypes.TENSOR
+
+    def _get_observation_space(self, *args, config, **kwargs):
+        return spaces.Box(shape=(1,), low=0, high=1, dtype=np.float32)
+
+    #def _path_to_point(self, point):
+    def _get_geodesic_distance(self, human_pos, robot_pos):
+        """
+        Obtain path to reach the coordinate point. If agent_pos is not given
+        the path starts at the agent base pos, otherwise it starts at the agent_pos
+        value
+        :param point: Vector3 indicating the target point
+        """
+        #agent_pos = self.cur_articulated_agent.base_pos
+
+        path = self._sim.ShortestPath()
+        # path.requested_start = robot_pos
+        # path.requested_end = human_pos
+        # found_path = self._sim.pathfinder.find_path(path)
+        # if not found_path:
+        #     return [agent_pos, point]
+        # #Get distance between path.points
+        # dist = 0
+        # path_points = path.points
+        # for i in range(len(path_points)):
+        #     dist += np.linalg.norm(path_points[i] - path_points[i+1])
+        return path #dist
+
+    #def get_observation(self, observations, episode, *args, **kwargs):
+    def get_observation(self):
+        #self._get_geodesic_distance(human_pose, robot_pos)
+        # self._sim: RearrangeSim
+        # T_inv = (
+        #     self._sim.get_agent_data(self.agent_id)
+        #     .articulated_agent.ee_transform()
+        #     .inverted()
+        # )
+
+        # idxs, _ = self._sim.get_targets()
+        # scene_pos = self._sim.get_scene_pos()
+        # pos = scene_pos[idxs]
+
+        # for i in range(pos.shape[0]):
+        #     pos[i] = T_inv.transform_point(pos[i])
+
+        # return pos.reshape(-1)
+        path = self._sim.ShortestPath()
+
+        return path
+
+    # def get_observation(self, observations, episode, *args, **kwargs):
+    #     #print("self.agent_id", self.agent_id)
+    #     if "oracle_nav_action" in self._task.actions:
+    #         nav_action = self._task.actions[
+    #             "oracle_nav_action"#f"agent_{self.agent_id}_oracle_nav_action"#"oracle_nav_soc_action" #f"agent_{self.agent_id}_oracle_nav_soc_action"#f"agent_{self.agent_id}_oracle_nav_action"
+    #         ]
+    #     else:
+    #         if f"agent_{self.agent_id}_oracle_nav_action" in self._task.actions:
+    #             nav_action = self._task.actions[
+    #                 f"agent_{self.agent_id}_oracle_nav_action"
+    #             ]
+    #         else:
+    #             #print("agent id is ", self.agent_id)
+    #             #print("actions are ", self._task.actions)
+    #             #raise Exception("Action nonexisistent")
+    #             return None
+    #     #return np.array(nav_action.was_reset, dtype=np.float32)
+    #     return np.array(nav_action.counter ==100)#, dtype=np.float32)
 

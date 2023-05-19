@@ -154,6 +154,8 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
         path.requested_start = agent_pos
         path.requested_end = point
         found_path = self._sim.pathfinder.find_path(path)
+        #print("path.points is ", path.points)
+        #breakpoint()
         if not found_path:
             return [agent_pos, point]
         return path.points

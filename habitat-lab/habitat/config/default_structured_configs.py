@@ -561,6 +561,11 @@ class WasResetSensorConfig(LabSensorConfig):
     type: str = "WasResetSensor"
 
 @dataclass
+class GetSPLSensorConfig(LabSensorConfig):
+    type: str = "GetSPLSensor"
+
+
+@dataclass
 class HasFinishedOracleNavSocSensorConfig(LabSensorConfig):
     type: str = "HasFinishedOracleNavSocSensor"
 
@@ -1956,6 +1961,12 @@ cs.store(
     group="habitat/task/lab_sensors",
     name="was_reset_sensor",
     node=WasResetSensorConfig,
+)
+cs.store(
+    package="habitat.task.lab_sensors.get_spl_sensor",
+    group="habitat/task/lab_sensors",
+    name="get_spl_sensor",
+    node=GetSPLSensorConfig,
 )
 cs.store(
     package="habitat.task.lab_sensors.has_finished_oracle_nav_soc",
