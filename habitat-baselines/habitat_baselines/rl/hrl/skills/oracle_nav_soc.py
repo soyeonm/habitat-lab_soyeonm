@@ -118,6 +118,7 @@ class OracleNavSocPolicy(NnSkillPolicy):
             LocalizationSensor.cls_uuid
         ]
         #print("Soc!")
+        print("soc last pose ", last_pose)
         return last_pose
 
     def _is_skill_done(
@@ -191,7 +192,7 @@ class OracleNavSocPolicy(NnSkillPolicy):
         )
 
         full_action[:, self._oracle_nav_ac_idx] = action_idxs
-        
+
         return PolicyActionData(
             actions=full_action, rnn_hidden_states=rnn_hidden_states
         )

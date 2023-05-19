@@ -414,8 +414,7 @@ class LocalizationSensor(UsesArticulatedAgentInterface, Sensor):
 
     def get_observation(self, observations, episode, *args, **kwargs):
         articulated_agent = self._sim.get_agent_data(
-            #self.agent_id
-            1
+            self.agent_id
         ).articulated_agent
         T = articulated_agent.base_transformation
         forward = np.array([1.0, 0, 0])
@@ -1127,7 +1126,7 @@ class HumanLocalizationSensor(UsesArticulatedAgentInterface, Sensor):
         #import ipdb; ipdb.set_trace()
 
     def _get_uuid(self, *args, **kwargs):
-        return LocalizationSensor.cls_uuid
+        return HumanLocalizationSensor.cls_uuid
 
     def _get_sensor_type(self, *args, **kwargs):
         return SensorTypes.TENSOR
@@ -1153,3 +1152,44 @@ class HumanLocalizationSensor(UsesArticulatedAgentInterface, Sensor):
         return np.array(
             [*articulated_agent.base_pos, heading_angle], dtype=np.float32
         )
+
+@registry.register_sensor
+class WasResetSensor(UsesArticulatedAgentInterface, Sensor):
+    """
+    Receives last human posture from localization sensor and 
+    """
+    cls_uuid = "was_reset_sensor"
+
+    def __init__(self, sim, config, *args, task, **kwargs):
+        self._task = task
+        self._sim = sim
+        super().__init__(config=config)
+
+    def _get_uuid(self, *args, **kwargs):
+        return WasResetSensor.cls_uuid
+
+    def _get_sensor_type(self, *args, **kwargs):
+        return SensorTypes.TENSOR
+
+    def _get_observation_space(self, *args, config, **kwargs):
+        return spaces.Box(shape=(1,), low=0, high=1, dtype=np.float32)
+
+    def get_observation(self, observations, episode, *args, **kwargs):
+        #print("self.agent_id", self.agent_id)
+        if "oracle_nav_action" in self._task.actions:
+            nav_action = self._task.actions[
+                "oracle_nav_action"#f"agent_{self.agent_id}_oracle_nav_action"#"oracle_nav_soc_action" #f"agent_{self.agent_id}_oracle_nav_soc_action"#f"agent_{self.agent_id}_oracle_nav_action"
+            ]
+        else:
+            if f"agent_{self.agent_id}_oracle_nav_action" in self._task.actions:
+                nav_action = self._task.actions[
+                    f"agent_{self.agent_id}_oracle_nav_action"
+                ]
+            else:
+                #print("agent id is ", self.agent_id)
+                #print("actions are ", self._task.actions)
+                #raise Exception("Action nonexisistent")
+                return None
+        #return np.array(nav_action.was_reset, dtype=np.float32)
+        return np.array(nav_action.counter ==1)#, dtype=np.float32)
+

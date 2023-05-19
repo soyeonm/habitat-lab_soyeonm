@@ -557,6 +557,10 @@ class HasFinishedOracleNavSensorConfig(LabSensorConfig):
     type: str = "HasFinishedOracleNavSensor"
 
 @dataclass
+class WasResetSensorConfig(LabSensorConfig):
+    type: str = "WasResetSensor"
+
+@dataclass
 class HasFinishedOracleNavSocSensorConfig(LabSensorConfig):
     type: str = "HasFinishedOracleNavSocSensor"
 
@@ -637,6 +641,10 @@ class DistToNavGoalSensorConfig(LabSensorConfig):
 class LocalizationSensorConfig(LabSensorConfig):
     type: str = "LocalizationSensor"
 
+
+@dataclass
+class HumanLocalizationSensorConfig(LabSensorConfig):
+    type: str = "HumanLocalizationSensor"
 
 @dataclass
 class QuestionSensorConfig(LabSensorConfig):
@@ -1890,6 +1898,12 @@ cs.store(
     node=LocalizationSensorConfig,
 )
 cs.store(
+    package="habitat.task.lab_sensors.human_localization_sensor",
+    group="habitat/task/lab_sensors",
+    name="human_localization_sensor",
+    node=HumanLocalizationSensorConfig,
+)
+cs.store(
     package="habitat.task.lab_sensors.target_start_sensor",
     group="habitat/task/lab_sensors",
     name="target_start_sensor",
@@ -1936,6 +1950,12 @@ cs.store(
     group="habitat/task/lab_sensors",
     name="has_finished_oracle_nav",
     node=HasFinishedOracleNavSensorConfig,
+)
+cs.store(
+    package="habitat.task.lab_sensors.was_reset_sensor",
+    group="habitat/task/lab_sensors",
+    name="was_reset_sensor",
+    node=WasResetSensorConfig,
 )
 cs.store(
     package="habitat.task.lab_sensors.has_finished_oracle_nav_soc",

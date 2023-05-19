@@ -11,6 +11,8 @@ from habitat.core.spaces import ActionSpace
 from habitat.tasks.rearrange.rearrange_sensors import LocalizationSensor
 from habitat.tasks.rearrange.rearrange_sensors import (
     HasFinishedOracleNavSensor,
+    HumanLocalizationSensor,
+    WasResetSensor
 )
 from habitat_baselines.common.logging import baselines_logger
 from habitat_baselines.rl.hrl.skills.nn_skill import NnSkillPolicy
@@ -56,6 +58,9 @@ class OracleNavPolicy(NnSkillPolicy):
         self._is_target_obj = None
         self._targ_obj_idx = None
         self._prev_pos = [None for _ in range(self._batch_size)]
+        #self.was_reset_last = self.was_reset()
+        self.human_poses = []
+        self.robot_poses = []
 
     def set_pddl_problem(self, pddl_prob):
         super().set_pddl_problem(pddl_prob)
@@ -114,10 +119,43 @@ class OracleNavPolicy(NnSkillPolicy):
             LocalizationSensor.cls_uuid
         ]
         #print("Ori!")
+        #print("last pose of human from ori", last_pose)
         return last_pose
 
     def store_last_human_poses(self, last_human_poses):
+        pass
+
+    def human_last_pose(self, observations):
+        last_human_pose = observations[
+            HumanLocalizationSensor.cls_uuid
+        ]
+        #print("Ori!")
+        #print("last pose of human from ori", last_pose)
+        return last_human_pose
+
+
+    def was_reset(self, observations):
+        was_reset_last = observations[
+            WasResetSensor.cls_uuid
+        ]
+        return was_reset_last
+
+    def reset_poses_lists(self):
+        #Initialize
+        self.human_poses = []
+        self.my_poses = []
+
+    def log_poses(self, observations):
+        robot_pose = self.last_agent_pose(observations)
+        human_pose = self.human_last_pose(observations)
+        self.human_poses.append(human_pose)
+        self.robot_poses.append(robot_pose)
+
+    def compute_metrics(self):
+        #breakpoint()
         
+
+
 
 
     def _is_skill_done(
@@ -183,6 +221,12 @@ class OracleNavPolicy(NnSkillPolicy):
         )
 
         full_action[:, self._oracle_nav_ac_idx] = action_idxs
+
+        self.log_poses(observations)
+        if self.was_reset(observations):
+            self.compute_metrics()
+            self.reset_poses_lists()
+
 
         return PolicyActionData(
             actions=full_action, rnn_hidden_states=rnn_hidden_states

@@ -969,9 +969,9 @@ class PPOTrainer(BaseRLTrainer):
                     not_done_masks) #robot_pose, human_pose = self._agent.actor_critic.get_poses(batch)
                 #breakpoint()
                 #Store last poses of human for the robot 
-                self._agent.actor_critic.store_last_human_poses(batch, test_recurrent_hidden_states,
-                    prev_actions,
-                    not_done_masks, last_poses)
+                # self._agent.actor_critic.store_last_human_poses(batch, test_recurrent_hidden_states,
+                #     prev_actions,
+                #     not_done_masks, last_poses)
                 #success_metrics = self._agent.actor_critic.get_socnav_found_human(last_poses)
 
                 if action_data.should_inserts is None:

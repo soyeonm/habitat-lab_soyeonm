@@ -50,6 +50,8 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
         self._prev_ep_id = None
         self._targets = {}
         self.skill_done = False
+        #self.was_reset = False
+        self.counter = 0
         #Defined for task 
         #self.found_human_at_least_once = 
 
@@ -103,6 +105,8 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
             self._targets = {}
             self._prev_ep_id = self._task._episode_id
         self.skill_done = False
+        #self.was_reset = True
+        self.counter = 0
 
     def _get_target_for_idx(self, nav_to_target_idx: int):
         nav_to_obj = self._poss_entities[nav_to_target_idx]
@@ -193,6 +197,7 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
         curr_path_points = self._path_to_point(final_nav_targ)
         robot_pos = np.array(self.cur_articulated_agent.base_pos)
 
+        self.counter  +=1
         if curr_path_points is None:
             raise Exception
         else:
