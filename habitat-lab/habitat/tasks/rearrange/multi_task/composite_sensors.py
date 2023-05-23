@@ -292,8 +292,6 @@ class CompositeSuccess(Measure):
     def update_metric(self, *args, episode, task, observations, **kwargs):
         self._metric = task.pddl_problem.is_expr_true(task.pddl_problem.goal)
         # did_collide = self.check_collision(task)
-
-
         # if did_collide:# and self._end_on_collide:
         #     task.should_end = True
 
@@ -307,6 +305,8 @@ class CompositeSuccess(Measure):
 
         if does_action_want_stop:
             task.should_end = True
+        print("should end is ", task.should_end)
+        print("done is ", task._done)
 
 
 @registry.register_measure
