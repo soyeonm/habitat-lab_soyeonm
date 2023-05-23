@@ -1129,6 +1129,7 @@ class ComputeSocNavMetricSensor(UsesArticulatedAgentInterface, Sensor):
         self._task = task
         self._sim = sim
         super().__init__(config=config)
+        #breakpoint()
         #self._end_on_collide = config.end_on_collide
         #import ipdb; ipdb.set_trace()
 
@@ -1213,15 +1214,16 @@ class ComputeSocNavMetricSensor(UsesArticulatedAgentInterface, Sensor):
         #print("robot poses ", len(robot_poses))
         #breakpoint()
         #every step, check if the agents collided
-        did_collide = self.collided()
-        if did_collide:
-            #end task
-            self._task.should_end
-            end_task = True
-            print("collided!")
+        # did_collide = self.collided()
+        # if did_collide:
+        #     #end task
+        #     self._task.should_end
+        #     end_task = True
+        #     print("collided!")
 
         #end_task = N
-        if len(robot_poses)==697:
+        #if len(robot_poses)==697:
+        if self._task._should_end:
             end_task = True
 
         #if len(robot_poses)==697: #At the end
