@@ -167,6 +167,7 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
         self.humanoid_controller.obj_transform_base.translation = end_pos
 
     def step(self, *args, is_last_action, **kwargs):
+        breakpoint()
         nav_to_target_idx = kwargs[
             self._action_arg_prefix + "oracle_nav_action"
         ]
