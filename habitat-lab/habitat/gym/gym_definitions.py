@@ -53,6 +53,7 @@ def make_gym_from_config(config: "DictConfig") -> gym.Env:
     """
     if "habitat" in config:
         config = config.habitat
+    #breakpoint()
     env_class_name = _get_env_name(config)
     env_class = get_env_class(env_class_name)
     assert (
