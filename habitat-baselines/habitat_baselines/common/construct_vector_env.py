@@ -90,7 +90,6 @@ def construct_envs(
         vector_env_cls = ThreadedVectorEnv
     else:
         vector_env_cls = VectorEnv
-
     envs = vector_env_cls(
         make_env_fn=make_gym_from_config,
         env_fn_args=tuple((c,) for c in configs),

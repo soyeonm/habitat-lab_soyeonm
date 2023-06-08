@@ -153,6 +153,54 @@ def continuous_vector_action_to_hab_dict(
     return action_dict
 
 
+# Adapted from
+# https://github.com/ikostrikov/pytorch-a2c-ppo-acktr-gail/blob/master/a2c_ppo_acktr/envs.py#L159
+class VecPyTorch():
+
+    def __init__(self, venv, num_envs, device):
+        self.venv = venv
+        self.num_envs = num_envs
+        # self.observation_space = venv.observation_space
+        # self.action_space = venv.action_space
+        self.device = device
+
+    def reset(self):
+        obs, info = self.venv.reset()
+        obs = torch.from_numpy(obs).float().to(self.device)
+        return obs, info
+
+    def step_async(self, actions):
+        actions = actions.cpu().numpy()
+        self.venv.step_async(actions)
+
+    def step_wait(self):
+        obs, reward, done, info = self.venv.step_wait()
+        obs = torch.from_numpy(obs).float().to(self.device)
+        reward = torch.from_numpy(reward).float()
+        return obs, reward, done, info
+
+    def step(self, actions):
+        actions = actions.cpu().numpy()
+        obs, reward, done, info = self.venv.step(actions)
+        obs = torch.from_numpy(obs).float().to(self.device)
+        reward = torch.from_numpy(reward).float()
+        return obs, reward, done, info
+
+    def get_rewards(self, inputs):
+        reward = self.venv.get_rewards(inputs)
+        reward = torch.from_numpy(reward).float()
+        return reward
+
+    def plan_act_and_preprocess(self, inputs):
+        obs, reward, done, info = self.venv.plan_act_and_preprocess(inputs)
+        obs = torch.from_numpy(obs).float().to(self.device)
+        reward = torch.from_numpy(reward).float()
+        return obs, reward, done, info
+
+    def close(self):
+        return self.venv.close()
+
+
 class HabGymWrapper(gym.Wrapper):
     """
     Wraps a Habitat RLEnv into a format compatible with the standard OpenAI Gym
@@ -184,7 +232,7 @@ class HabGymWrapper(gym.Wrapper):
         env: "RLEnv",
         save_orig_obs: bool = False,
     ):
-        super().__init__(env)
+        super().__init__(env)#; breakpoint()   
 
         habitat_gym_config = env.config.gym
         self._gym_goal_keys = habitat_gym_config.desired_goal_keys
@@ -212,7 +260,6 @@ class HabGymWrapper(gym.Wrapper):
                 )
             }
         )
-
         self.original_action_space = action_space
 
         self.action_space = create_action_space(action_space)
@@ -240,13 +287,14 @@ class HabGymWrapper(gym.Wrapper):
 
         self._screen: Optional[pygame.surface.Surface] = None
 
+
     def step(
         self, action: Union[np.ndarray, int]
     ) -> Tuple[HabGymWrapperObsType, float, bool, dict]:
         assert self.action_space.contains(
             action
         ), f"Invalid action {action} for action space {self.action_space}"
-
+        #breakpoint()
         if isinstance(self.action_space, spaces.Box):
             assert isinstance(action, np.ndarray)
             hab_action = continuous_vector_action_to_hab_dict(
@@ -256,12 +304,34 @@ class HabGymWrapper(gym.Wrapper):
             hab_action = {"action": action}
         return self._direct_hab_step(hab_action)
 
+    def plan_act_and_preprocess(
+        self, inputs: Union[int, str, Dict[str, Any]]):
+        # assert self.action_space.contains(
+        #     action
+        # ), f"Invalid action {action} for action space {self.action_space}"
+        #breakpoint()
+        # if isinstance(self.action_space, spaces.Box):
+        #     assert isinstance(action, np.ndarray)
+        #     hab_action = continuous_vector_action_to_hab_dict(
+        #         self.original_action_space, self.action_space, action
+        #     )
+        # else:
+        #     hab_action = {"action": action}
+        return self._direct_hab_plan_act_and_preprocess(inputs)
+
+
     @property
     def number_of_episodes(self) -> int:
         return self.env.number_of_episodes
 
     def current_episode(self, all_info: bool = False) -> "BaseEpisode":
         return self.env.current_episode(all_info)
+
+    def _direct_hab_plan_act_and_preprocess(self, inputs: Union[int, str, Dict[str, Any]]):
+        obs, reward, done, info = self.env.plan_act_and_preprocess(inputs)
+        self._last_obs = obs
+        #obs = self._transform_obs(obs)
+        return obs, reward, done, info
 
     def _direct_hab_step(self, action: Union[int, str, Dict[str, Any]]):
         obs, reward, done, info = self.env.step(action=action)
@@ -272,7 +342,7 @@ class HabGymWrapper(gym.Wrapper):
     def _transform_obs(self, obs):
         if self._save_orig_obs:
             self.orig_obs = obs
-
+        #breakpoint()
         observation = {
             "observation": OrderedDict(
                 [(k, obs[k]) for k in self._gym_obs_keys]
@@ -299,7 +369,7 @@ class HabGymWrapper(gym.Wrapper):
                 observation[k] = np.concatenate(list(v.values()))
         if len(observation) == 1:
             observation = observation["observation"]
-
+        #breakpoint()
         return observation
 
     def reset(
@@ -309,10 +379,12 @@ class HabGymWrapper(gym.Wrapper):
         if return_info:
             obs, info = obs
             self._last_obs = obs
-            return self._transform_obs(obs), info
+            #return self._transform_obs(obs), info
+            return obs, info
         else:
             self._last_obs = obs
             return self._transform_obs(obs)
+            return obs
 
     def render(self, mode: str = "human", **kwargs):
         last_infos = self.env.get_info(observations=None)

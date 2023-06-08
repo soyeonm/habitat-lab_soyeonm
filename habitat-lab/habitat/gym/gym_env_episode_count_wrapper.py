@@ -44,6 +44,7 @@ class EnvCountEpisodeWrapper(Wrapper):
     @property
     def original_action_space(self) -> spaces.space:
         if self._has_number_episode:
+            breakpoint()
             return self.env.original_action_space
         else:
             return self.action_space

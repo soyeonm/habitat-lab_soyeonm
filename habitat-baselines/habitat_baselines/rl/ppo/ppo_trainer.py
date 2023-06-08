@@ -143,7 +143,7 @@ class PPOTrainer(BaseRLTrainer):
     def _init_envs(self, config=None, is_eval: bool = False):
         if config is None:
             config = self.config
-
+        breakpoint()
         self.envs, num_scenes = construct_envs(
             config,
             workers_ignore_signals=is_slurm_batch_job(),
@@ -826,6 +826,9 @@ class PPOTrainer(BaseRLTrainer):
         with read_write(config):
             config.habitat.dataset.split = config.habitat_baselines.eval.split
 
+        import os
+        import cv2
+
         if len(self.config.habitat_baselines.eval.video_option) > 0:
             n_agents = len(config.habitat.simulator.agents)
             for agent_i in range(n_agents):
@@ -854,7 +857,7 @@ class PPOTrainer(BaseRLTrainer):
                                         render_view.uuid
                                     )
                     config.habitat.simulator.debug_render = True
-
+        breakpoint()
         if config.habitat_baselines.verbose:
             logger.info(f"env config: {OmegaConf.to_yaml(config)}")
 
@@ -938,6 +941,7 @@ class PPOTrainer(BaseRLTrainer):
         pbar = tqdm.tqdm(total=number_of_eval_episodes * evals_per_ep)
         self._agent.eval()
         #breakpoint()
+        step_count = 0
         while (
             len(stats_episodes) < (number_of_eval_episodes * evals_per_ep)
             and self.envs.num_envs > 0
@@ -986,6 +990,13 @@ class PPOTrainer(BaseRLTrainer):
             else:
                 step_data = [a.item() for a in action_data.env_actions.cpu()]
             #breakpoint()
+            if not(os.path.exists("agent_first_rgb")):
+                os.makedirs("agent_first_rgb")
+            #breakpoint()
+            import pickle
+            pickle.dump(batch['agent_0_head_depth'].numpy(), open("agent_first_rgb/" + str(step_count) + ".p", "wb"))
+            #cv2.imwrite("agent_first_rgb/" + str(step_count) + ".png", batch['agent_0_head_depth'].astype(np.uint8))
+            step_count+=1
             outputs = self.envs.step(step_data)
 
 
@@ -1002,7 +1013,7 @@ class PPOTrainer(BaseRLTrainer):
                 device=self.device,
             )
             batch = apply_obs_transforms_batch(batch, self.obs_transforms)  # type: ignore
-
+            breakpoint()
             not_done_masks = torch.tensor(
                 [[not done] for done in dones],
                 dtype=torch.bool,

@@ -44,7 +44,7 @@ defaults:
   - _self_
 
 habitat:
-  env_task: GymHabitatSocNavEnv
+  #env_task: GymHabitatSemExpEnv #GymHabitatSocNavEnv
   task:
     reward_measure: social_nav_reward
     slack_reward: 0.
