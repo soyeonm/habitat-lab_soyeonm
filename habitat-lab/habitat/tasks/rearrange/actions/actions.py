@@ -459,7 +459,6 @@ class BaseVelAction(ArticulatedAgentAction):
 
         self.base_vel_ctrl.linear_velocity = mn.Vector3(lin_vel, 0, 0)
         self.base_vel_ctrl.angular_velocity = mn.Vector3(0, ang_vel, 0)
-
         if lin_vel != 0.0 or ang_vel != 0.0:
             self.update_base()
 

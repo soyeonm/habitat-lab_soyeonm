@@ -85,7 +85,9 @@ except ImportError:
 DEFAULT_POSE_PATH = (
     "data/humanoids/humanoid_data/walking_motion_processed_smplx.pkl"
 )
-DEFAULT_CFG = "benchmark/rearrange/play.yaml"
+DEFAULT_CFG = (
+    "benchmark/rearrange/play_spot.yaml"  # "benchmark/rearrange/play.yaml"
+)
 DEFAULT_RENDER_STEPS_LIMIT = 60
 SAVE_VIDEO_DIR = "./data/vids"
 SAVE_ACTIONS_DIR = "./data/interactive_play_replays"
@@ -483,6 +485,18 @@ def play_env(env, args, config):
         )
 
     while True:
+        print(
+            "camera location in x, z, y:",
+            env.sim.articulated_agent._sim._sensors[
+                "articulated_agent_arm_depth"
+            ]._sensor_object.node.transformation.translation,
+        )
+        print(
+            "camera rotation:",
+            env.sim.articulated_agent._sim._sensors[
+                "articulated_agent_arm_depth"
+            ]._sensor_object.angles(),
+        )
         if (
             args.save_actions
             and len(all_arm_actions) > args.save_actions_count

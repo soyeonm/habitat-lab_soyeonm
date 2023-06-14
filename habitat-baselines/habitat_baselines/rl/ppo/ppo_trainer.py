@@ -94,7 +94,6 @@ class PPOTrainer(BaseRLTrainer):
         self._is_static_encoder = False
         self._encoder = None
         self._env_spec = None
-
         # Distributed if the world size would be
         # greater than 1
         self._is_distributed = get_distrib_size()[2] > 1
@@ -840,6 +839,7 @@ class PPOTrainer(BaseRLTrainer):
                 )
 
                 agent_sensors = agent_config.sim_sensors
+                # breakpoint()
                 extra_sensors = config.habitat_baselines.eval.extra_sim_sensors
                 with read_write(agent_sensors):
                     agent_sensors.update(extra_sensors)
@@ -859,7 +859,7 @@ class PPOTrainer(BaseRLTrainer):
                                         render_view.uuid
                                     )
                     config.habitat.simulator.debug_render = True
-
+                # breakpoint()
         if config.habitat_baselines.verbose:
             logger.info(f"env config: {OmegaConf.to_yaml(config)}")
 
@@ -879,6 +879,11 @@ class PPOTrainer(BaseRLTrainer):
         observations = self.envs.reset()
         batch = batch_obs(observations, device=self.device)
         batch = apply_obs_transforms_batch(batch, self.obs_transforms)  # type: ignore
+        # breakpoint()
+        # import cv2
+        # cv2.imwrite("head_rgb.png", batch['agent_0_head_rgb'][0].numpy())
+        # cv2.imwrite("head_depth" +  ".png", batch['agent_0_head_depth'][0, :, :, 0].numpy())
+        # cv2.imwrite("human_head_rgb" +  ".png", batch['agent_1_head_rgb'][0].numpy())
 
         current_episode_reward = torch.zeros(
             self.envs.num_envs, 1, device="cpu"
@@ -942,6 +947,7 @@ class PPOTrainer(BaseRLTrainer):
 
         pbar = tqdm.tqdm(total=number_of_eval_episodes * evals_per_ep)
         self._agent.eval()
+        count = 0
         while (
             len(stats_episodes) < (number_of_eval_episodes * evals_per_ep)
             and self.envs.num_envs > 0
@@ -1005,6 +1011,13 @@ class PPOTrainer(BaseRLTrainer):
                 device=self.device,
             )
             batch = apply_obs_transforms_batch(batch, self.obs_transforms)  # type: ignore
+            # breakpoint()
+            # cv2.imwrite("head_rgb" + str(count) +  ".png", batch['agent_0_head_rgb'][0].numpy())
+            # cv2.imwrite("head_depth" + str(count) +  ".png", batch['agent_0_head_depth'][0, :, :, 0].numpy())
+            # cv2.imwrite("human_head_rgb" + str(count) + ".png", batch['agent_1_head_rgb'][0].numpy())
+            # import pickle
+            # pickle.dump(batch['agent_1_head_depth'].numpy(), open("head_rgb_" + str(count) + ".p", "wb"))
+            count += 1
 
             not_done_masks = torch.tensor(
                 [[not done] for done in dones],

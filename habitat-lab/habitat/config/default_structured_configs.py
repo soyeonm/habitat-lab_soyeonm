@@ -1402,15 +1402,15 @@ class HabitatSimFisheyeSemanticSensorConfig(SimulatorFisheyeSensorConfig):
 @dataclass
 class HeadRGBSensorConfig(HabitatSimRGBSensorConfig):
     uuid: str = "head_rgb"
-    width: int = 256
-    height: int = 256
+    width: int = 640
+    height: int = 480
 
 
 @dataclass
 class HeadDepthSensorConfig(HabitatSimDepthSensorConfig):
     uuid: str = "head_depth"
-    width: int = 256
-    height: int = 256
+    width: int = 640
+    height: int = 480
 
 
 @dataclass
@@ -1423,22 +1423,22 @@ class HeadPanopticSensorConfig(HabitatSimSemanticSensorConfig):
 @dataclass
 class ArmPanopticSensorConfig(HabitatSimSemanticSensorConfig):
     uuid: str = "articulated_agent_arm_panoptic"
-    width: int = 256
-    height: int = 256
+    width: int = 640  # 256
+    height: int = 480  # 256
 
 
 @dataclass
 class ArmRGBSensorConfig(HabitatSimRGBSensorConfig):
     uuid: str = "articulated_agent_arm_rgb"
-    width: int = 256
-    height: int = 256
+    width: int = 640  # 480 #256
+    height: int = 480  # 256
 
 
 @dataclass
 class ArmDepthSensorConfig(HabitatSimDepthSensorConfig):
     uuid: str = "articulated_agent_arm_depth"
-    width: int = 256
-    height: int = 256
+    width: int = 640  # 256
+    height: int = 480  # 256
 
 
 @dataclass

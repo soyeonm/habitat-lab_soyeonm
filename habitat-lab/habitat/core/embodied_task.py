@@ -319,6 +319,8 @@ class EmbodiedTask:
         action_name = action["action"]
         if "action_args" not in action or action["action_args"] is None:
             action["action_args"] = {}
+        print("action args ", action["action_args"])
+        # breakpoint()
         observations: Any = {}
         if isinstance(action_name, tuple):  # there are multiple actions
             for i, a_name in enumerate(action_name):
