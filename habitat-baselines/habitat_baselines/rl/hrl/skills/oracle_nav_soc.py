@@ -177,6 +177,7 @@ class OracleNavSocPolicy(NnSkillPolicy):
         )
 
         full_action[:, self._oracle_nav_ac_idx] = action_idxs
+        print("oracle nav idx is ", self._oracle_nav_ac_idx)
 
         return PolicyActionData(
             actions=full_action, rnn_hidden_states=rnn_hidden_states

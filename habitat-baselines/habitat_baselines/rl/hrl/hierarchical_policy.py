@@ -108,6 +108,7 @@ class HierarchicalPolicy(nn.Module, Policy):
         self._stop_action_idx, _ = find_action_range(
             action_space, "rearrange_stop"
         )
+        # self._stop_action_idx =
 
     def _create_skills(
         self, skills, observation_space, action_space, full_config
@@ -318,6 +319,7 @@ class HierarchicalPolicy(nn.Module, Policy):
 
         # Skills should not be responsible for terminating the overall episode.
         actions[:, self._stop_action_idx] = 0.0
+        print("stop action idx is ", self._stop_action_idx)
 
         (
             self._cur_call_high_level,

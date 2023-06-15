@@ -66,6 +66,16 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
             vel = [0, turn_vel]
         return vel
 
+    # def _compute_forward():
+
+    def _compute_turn_left(rel, turn_vel, robot_forward):
+        vel = [0, -turn_vel]
+        return vel
+
+    def _compute_turn_right(rel, turn_vel, robot_forward):
+        vel = [0, turn_vel]
+        return vel
+
     def lazy_inst_humanoid_controller(self, task, config):
         # Lazy instantiation of humanoid controller
         # We assign the task with the humanoid controller, so that multiple actions can
@@ -178,72 +188,84 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
 
     def step(self, *args, is_last_action, **kwargs):
         self.skill_done = False
-        nav_to_target_idx = kwargs[
-            self._action_arg_prefix + "oracle_nav_action"
-        ]
-        if nav_to_target_idx <= 0 or nav_to_target_idx > len(
-            self._poss_entities
-        ):
-            if is_last_action:
-                return self._sim.step(HabitatSimActions.base_velocity)
-            else:
-                return {}
-        nav_to_target_idx = int(nav_to_target_idx[0]) - 1
+        # nav_to_target_idx = kwargs[
+        #     self._action_arg_prefix + "oracle_nav_action"
+        # ]
+        # 0: stop, 1: forward, 2: left, 3: right
+        action_to_take = kwargs[self._action_arg_prefix + "oracle_nav_action"]
+        # if nav_to_target_idx <= 0 or nav_to_target_idx > len(
+        #     self._poss_entities
+        # ):
+        #     if is_last_action:
+        #         return self._sim.step(HabitatSimActions.base_velocity)
+        #     else:
+        #         return {}
+        # nav_to_target_idx = int(nav_to_target_idx[0]) - 1
 
-        final_nav_targ, obj_targ_pos = self._get_target_for_idx(
-            nav_to_target_idx
-        )
-        base_T = self.cur_articulated_agent.base_transformation
-        curr_path_points = self._path_to_point(final_nav_targ)
+        # final_nav_targ, obj_targ_pos = self._get_target_for_idx(
+        #     nav_to_target_idx
+        # )
+        # base_T = self.cur_articulated_agent.base_transformation
+        # curr_path_points = self._path_to_point(final_nav_targ)
+        curr_path_points = []
         robot_pos = np.array(self.cur_articulated_agent.base_pos)
         self.poses.append(robot_pos)
 
         if curr_path_points is None:
             raise Exception
         else:
-            # Compute distance and angle to target
-            if len(curr_path_points) == 1:
-                curr_path_points += curr_path_points
-            cur_nav_targ = curr_path_points[1]
-            forward = np.array([1.0, 0, 0])
-            robot_forward = np.array(base_T.transform_vector(forward))
+            # # Compute distance and angle to target
+            # if len(curr_path_points) == 1:
+            #     curr_path_points += curr_path_points
+            # cur_nav_targ = curr_path_points[1]
+            # forward = np.array([1.0, 0, 0])
+            # robot_forward = np.array(base_T.transform_vector(forward))
 
-            # Compute relative target.
-            rel_targ = cur_nav_targ - robot_pos
+            # # Compute relative target.
+            # rel_targ = cur_nav_targ - robot_pos
 
-            # Compute heading angle (2D calculation)
-            robot_forward = robot_forward[[0, 2]]
-            rel_targ = rel_targ[[0, 2]]
-            rel_pos = (obj_targ_pos - robot_pos)[[0, 2]]
+            # # Compute heading angle (2D calculation)
+            # robot_forward = robot_forward[[0, 2]]
+            # rel_targ = rel_targ[[0, 2]]
+            # rel_pos = (obj_targ_pos - robot_pos)[[0, 2]]
 
-            angle_to_target = get_angle(robot_forward, rel_targ)
-            angle_to_obj = get_angle(robot_forward, rel_pos)
+            # angle_to_target = get_angle(robot_forward, rel_targ)
+            # angle_to_obj = get_angle(robot_forward, rel_pos)
 
-            dist_to_final_nav_targ = np.linalg.norm(
-                (final_nav_targ - robot_pos)[[0, 2]]
-            )
-            at_goal = (
-                dist_to_final_nav_targ < self._config.dist_thresh
-                and angle_to_obj < self._config.turn_thresh
-            )
+            # dist_to_final_nav_targ = np.linalg.norm(
+            #     (final_nav_targ - robot_pos)[[0, 2]]
+            # )
+            # at_goal = (
+            #     dist_to_final_nav_targ < self._config.dist_thresh
+            #     and angle_to_obj < self._config.turn_thresh
+            # )
 
             if self.motion_type == "base_velocity":
-                if not at_goal:
-                    if dist_to_final_nav_targ < self._config.dist_thresh:
-                        # Look at the object
-                        vel = OracleNavAction._compute_turn(
-                            rel_pos, self._config.turn_velocity, robot_forward
-                        )
-                    elif angle_to_target < self._config.turn_thresh:
-                        # Move towards the target
+                if 1 == 1:
+                    # if dist_to_final_nav_targ < self._config.dist_thresh:
+                    #     # Look at the object
+                    #     vel = OracleNavAction._compute_turn(
+                    #         rel_pos, self._config.turn_velocity, robot_forward
+                    #     )
+                    # elif angle_to_target < self._config.turn_thresh:
+                    #     # Move towards the target
+                    #     vel = [self._config.forward_velocity, 0]
+                    # else:
+                    #     # Look at the target waypoint.
+                    #     vel = OracleNavAction._compute_turn(
+                    #         rel_targ, self._config.turn_velocity, robot_forward
+                    #     )
+                    # 0: stop, 1: forward, 2: left, 3: right
+                    if action_to_take == 1:  # forward
                         vel = [self._config.forward_velocity, 0]
-                    else:
-                        # Look at the target waypoint.
-                        vel = OracleNavAction._compute_turn(
-                            rel_targ, self._config.turn_velocity, robot_forward
-                        )
-                else:
-                    vel = [0, 0]
+                    elif action_to_take == 2:  # turn left
+                        vel = [0, -self._config.turn_velocity]
+                    elif action_to_take == 3:  # turn right
+                        vel = [0, self._config.turn_velocity]
+                    else:  # stop
+                        vel = [0, 0]
+                    # else:
+                    #     vel = [0, 0]
                     self.skill_done = True
                 kwargs[f"{self._action_arg_prefix}base_vel"] = np.array(vel)
                 return BaseVelAction.step(
