@@ -121,10 +121,10 @@ habitat:
             height: 480 #224 #480 #224
             width: 640 #171 #640 #171
             hfov: 55
-          # arm_panoptic_sensor:
-          #   height: 480 #224
-          #   width: 640 #171
-          #   hfov: 79 #55
+          arm_panoptic_sensor:
+            height: 480 #224
+            width: 640 #171
+            hfov: 79 #55
       agent_1:
         articulated_agent_urdf: 'data/humanoids/humanoid_data/female2_0.urdf'
         articulated_agent_type: 'KinematicHumanoid'
