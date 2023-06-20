@@ -114,6 +114,7 @@ class Env:
         self._sim = make_sim(
             id_sim=self._config.simulator.type, config=self._config.simulator
         )
+        self._sim.navmesh_visualization = True
 
         self._task = make_task(
             self._config.task.type,

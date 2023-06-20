@@ -357,6 +357,54 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
             }
         )
 
+    #Copied from motion_viewer.py
+    def find_short_path_from_two_points(
+        self, sample1=None, sample2=None
+    ) -> habitat_sim.ShortestPath():
+        """
+        Finds two random points on the NavMesh, calculates a shortest path between
+        the two, and creates a trajectory object to visualize the path.
+        """
+        # if self.spline_path_traj_obj_id >= 0:
+        #     self._sim.get_rigid_object_manager().remove_object_by_id(
+        #         self.spline_path_traj_obj_id
+        #     )
+        self.spline_path_traj_obj_id = -1
+
+        found_path = False
+        while not found_path:
+            #sample1 = None
+            #sample2 = None
+            while sample1 is None or sample2 is None:
+                sample1 = sample1 or self._sim.pathfinder.get_random_navigable_point()
+                sample2 = sample2 or self._sim.pathfinder.get_random_navigable_point()
+
+                # constraint points to be on first floor
+                if sample1[1] != sample2[1] or sample1[1] > 2:
+                    logger.warn(
+                        "Warning: points are out of acceptable area, replacing with randoms"
+                    )
+                    sample1, sample2 = None, None
+
+            path = habitat_sim.ShortestPath()
+            path.requested_start = sample1
+            path.requested_end = sample2
+            found_path = self._sim.pathfinder.find_path(path)
+            self.path_points = path.points
+
+        spline_points = habitat_sim.geo.build_catmull_rom_spline(path.points, 10, 0.75)
+        path.points = spline_points
+
+        colors_spline = [mn.Color3.blue(), mn.Color3.green()]
+
+        self.spline_path_traj_obj_id = self._sim.add_gradient_trajectory_object(
+            traj_vis_name=f"spline_{time.strftime('%Y-%m-%d_%H-%M-%S')}",
+            colors=colors_spline,
+            points=spline_points,
+            radius=0.01,
+        )
+        return path
+
     def _get_target_for_idx(self, nav_to_target_idx: int):
         if nav_to_target_idx not in self._targets:
             nav_to_obj = self._poss_entities[nav_to_target_idx]

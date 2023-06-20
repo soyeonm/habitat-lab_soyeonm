@@ -44,3 +44,5 @@ habitat:
     kinematic_mode: True
     ac_freq_ratio: 1
     step_physics: False
+
+  

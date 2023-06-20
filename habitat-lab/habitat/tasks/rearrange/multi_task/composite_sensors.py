@@ -20,6 +20,8 @@ from habitat.tasks.rearrange.rearrange_sensors import (
     RearrangeReward,
 )
 
+from habitat.tasks.rearrange.utils import coll_name_matches
+
 
 @registry.register_sensor
 class GlobalPredicatesSensor(Sensor):
@@ -190,6 +192,7 @@ class CompositeSuccess(Measure):
         super().__init__(**kwargs)
         self._sim = sim
         self._config = config
+        #self._end_on_collide = config.end_on_collide
 
     @staticmethod
     def _get_uuid(*args, **kwargs):
@@ -202,8 +205,45 @@ class CompositeSuccess(Measure):
             )
         self.update_metric(*args, task=task, **kwargs)
 
+    def check_collision(self, task):
+        sim = task._sim
+        sim.perform_discrete_collision_detection()
+        contact_points = sim.get_physics_contact_points()
+        found_contact = False
+        agent_ids = [
+            articulated_agent.sim_obj.object_id
+            for articulated_agent in sim.agents_mgr.articulated_agents_iter
+        ]
+        if len(agent_ids) != 2:
+            raise ValueError("Sensor only supports 2 agents")
+        for cp in contact_points:
+            if coll_name_matches(cp, agent_ids[0]) and coll_name_matches(
+                cp, agent_ids[1]
+            ):
+                found_contact = True
+        return found_contact
+
+    # def update_metric(self, *args, episode, task, observations, **kwargs):
+    #     #breakpoint()
+    #     self._metric = task.pddl_problem.is_expr_true(task.pddl_problem.goal)
+    #     did_collide = self.check_collision(task)
+    #     if did_collide:# and self._end_on_collide:
+    #         task.should_end = True
+    #     if self._config.must_call_stop:
+    #         does_action_want_stop = task.measurements.measures[
+    #             DoesWantTerminate.cls_uuid
+    #         ].get_metric()
+    #         self._metric = self._metric and does_action_want_stop
+    #     else:
+    #         does_action_want_stop = False
+    #     if does_action_want_stop:
+    #         task.should_end = True
+
     def update_metric(self, *args, episode, task, observations, **kwargs):
         self._metric = task.pddl_problem.is_expr_true(task.pddl_problem.goal)
+        # did_collide = self.check_collision(task)
+        # if did_collide and self._end_on_collide:
+        #     task.should_end = True
 
         if self._config.must_call_stop:
             does_action_want_stop = task.measurements.measures[

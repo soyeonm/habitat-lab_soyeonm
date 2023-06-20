@@ -1153,7 +1153,7 @@ class ComputeSocNavMetricMeasure(UsesArticulatedAgentInterface, Measure):
         super().__init__(**kwargs)
         self._sim = sim
         self._config = config
-        # self._end_on_collide = config.end_on_collide
+        self._end_on_collide = config.end_on_collide
 
     @staticmethod
     def _get_uuid(*args, **kwargs):
@@ -1166,25 +1166,25 @@ class ComputeSocNavMetricMeasure(UsesArticulatedAgentInterface, Measure):
         #     )
         self.update_metric(*args, task=task, **kwargs)
 
-    def check_collision(self, task):
-        sim = task._sim
-        sim.perform_discrete_collision_detection()
-        contact_points = sim.get_physics_contact_points()
-        found_contact = False
+    # def check_collision(self, task):
+    #     sim = task._sim
+    #     sim.perform_discrete_collision_detection()
+    #     contact_points = sim.get_physics_contact_points()
+    #     found_contact = False
 
-        agent_ids = [
-            articulated_agent.sim_obj.object_id
-            for articulated_agent in sim.agents_mgr.articulated_agents_iter
-        ]
-        if len(agent_ids) != 2:
-            raise ValueError("Sensor only supports 2 agents")
+    #     agent_ids = [
+    #         articulated_agent.sim_obj.object_id
+    #         for articulated_agent in sim.agents_mgr.articulated_agents_iter
+    #     ]
+    #     if len(agent_ids) != 2:
+    #         raise ValueError("Sensor only supports 2 agents")
 
-        for cp in contact_points:
-            if coll_name_matches(cp, agent_ids[0]) and coll_name_matches(
-                cp, agent_ids[1]
-            ):
-                found_contact = True
-        return found_contact
+    #     for cp in contact_points:
+    #         if coll_name_matches(cp, agent_ids[0]) and coll_name_matches(
+    #             cp, agent_ids[1]
+    #         ):
+    #             found_contact = True
+    #     return found_contact
 
     def found_human_list(self, robot_poses, human_poses):
         distances = [
@@ -1268,7 +1268,8 @@ class ComputeSocNavMetricMeasure(UsesArticulatedAgentInterface, Measure):
 
     def update_metric(self, *args, episode, task, observations, **kwargs):
         did_collide = self.check_collision(task)
-        if did_collide:  # and self._end_on_collide:
+        print("DID COLLDIE IS ", did_collide)
+        if did_collide and self._end_on_collide:
             task.should_end = True
         self._metric = self.get_socnav_metrics(episode, task, observations)
 
