@@ -19,7 +19,6 @@ from habitat.tasks.rearrange.rearrange_sensors import (
     ObjectToGoalDistance,
     RearrangeReward,
 )
-
 from habitat.tasks.rearrange.utils import coll_name_matches
 
 
@@ -192,7 +191,7 @@ class CompositeSuccess(Measure):
         super().__init__(**kwargs)
         self._sim = sim
         self._config = config
-        #self._end_on_collide = config.end_on_collide
+        # self._end_on_collide = config.end_on_collide
 
     @staticmethod
     def _get_uuid(*args, **kwargs):

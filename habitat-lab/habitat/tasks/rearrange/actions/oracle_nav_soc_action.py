@@ -21,8 +21,6 @@ from habitat.tasks.rearrange.actions.actions import (
 from habitat.tasks.rearrange.utils import place_agent_at_dist_from_pos
 from habitat.tasks.utils import get_angle
 
-import time
-
 
 @registry.register_task_action
 class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
@@ -385,8 +383,6 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
             self.waypoints[self.waypoint_pointer],
         )
 
-
-
         # print("received nav_to_target_idx", nav_to_target_idx)
         # print("final_nav_targ ", final_nav_targ, " obj_targ_pos, ", obj_targ_pos)
         # import ipdb; ipdb.set_trace()
@@ -396,7 +392,7 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         robot_pos = np.array(self.cur_articulated_agent.base_pos)
         self.poses.append(robot_pos)
 
-        #Visualize waypoint pointer and my pose
+        # Visualize waypoint pointer and my pose
         # self.find_short_path_from_two_points(self.waypoints[self.waypoint_pointer], robot_pos)
 
         self._counter += 1

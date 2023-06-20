@@ -357,7 +357,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
             }
         )
 
-    #Copied from motion_viewer.py
+    # Copied from motion_viewer.py
     def find_short_path_from_two_points(
         self, sample1=None, sample2=None
     ) -> habitat_sim.ShortestPath():
@@ -373,11 +373,17 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
 
         found_path = False
         while not found_path:
-            #sample1 = None
-            #sample2 = None
+            # sample1 = None
+            # sample2 = None
             while sample1 is None or sample2 is None:
-                sample1 = sample1 or self._sim.pathfinder.get_random_navigable_point()
-                sample2 = sample2 or self._sim.pathfinder.get_random_navigable_point()
+                sample1 = (
+                    sample1
+                    or self._sim.pathfinder.get_random_navigable_point()
+                )
+                sample2 = (
+                    sample2
+                    or self._sim.pathfinder.get_random_navigable_point()
+                )
 
                 # constraint points to be on first floor
                 if sample1[1] != sample2[1] or sample1[1] > 2:
@@ -392,16 +398,20 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
             found_path = self._sim.pathfinder.find_path(path)
             self.path_points = path.points
 
-        spline_points = habitat_sim.geo.build_catmull_rom_spline(path.points, 10, 0.75)
+        spline_points = habitat_sim.geo.build_catmull_rom_spline(
+            path.points, 10, 0.75
+        )
         path.points = spline_points
 
         colors_spline = [mn.Color3.blue(), mn.Color3.green()]
 
-        self.spline_path_traj_obj_id = self._sim.add_gradient_trajectory_object(
-            traj_vis_name=f"spline_{time.strftime('%Y-%m-%d_%H-%M-%S')}",
-            colors=colors_spline,
-            points=spline_points,
-            radius=0.01,
+        self.spline_path_traj_obj_id = (
+            self._sim.add_gradient_trajectory_object(
+                traj_vis_name=f"spline_{time.strftime('%Y-%m-%d_%H-%M-%S')}",
+                colors=colors_spline,
+                points=spline_points,
+                radius=0.01,
+            )
         )
         return path
 

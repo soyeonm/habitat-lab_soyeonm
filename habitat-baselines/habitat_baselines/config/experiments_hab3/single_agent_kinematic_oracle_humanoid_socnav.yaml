@@ -40,7 +40,7 @@ habitat:
     kinematic_mode: True
     ac_freq_ratio: 1
     step_physics: False
-    
+
   dataset:
       #data_path: data/datasets/floorplanner/rearrange/scratch/train/microtrain_small_size_v0.3.1.json.gz
       data_path: data/datasets/hm3d_semantics/rearrange_hm3d_v2_temp_example/train/content/1S7LAXRdDqK_retry.json.gz
