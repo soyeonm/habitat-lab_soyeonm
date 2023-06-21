@@ -392,10 +392,17 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                     )
                     sample1, sample2 = None, None
 
+            if sample1[1] != sample2[1] or sample1[1] > 2:
+                print(
+                    "Warning: points are out of acceptable area, replacing with randoms"
+                )
+                sample1, sample2 = None, None
+
             path = habitat_sim.ShortestPath()
             path.requested_start = sample1
             path.requested_end = sample2
             found_path = self._sim.pathfinder.find_path(path)
+            print("found path is ", found_path)
             self.path_points = path.points
 
         spline_points = habitat_sim.geo.build_catmull_rom_spline(
@@ -518,6 +525,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         curr_path_points = self._path_to_point(final_nav_targ)
         # Get the robot position
         robot_pos = np.array(self.cur_articulated_agent.base_pos)
+
         self.poses.append(robot_pos)
         if curr_path_points is None:
             raise RuntimeError("Pathfinder returns empty list")
@@ -551,6 +559,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
 
             # Planning to see if the robot needs to do back-up
             need_move_backward = False
+            #self.find_short_path_from_two_points(final_nav_targ, robot_pos)
             if (
                 dist_to_final_nav_targ >= self._config.dist_thresh
                 and angle_to_target >= self._config.turn_thresh
