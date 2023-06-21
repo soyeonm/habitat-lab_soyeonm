@@ -98,8 +98,8 @@ habitat:
     # Add Spot robot agents
     agents:
       agent_0:
-        radius: 0.1 #0.25
-        height: 0.3 #1.8
+        radius: 0.05 #0.25
+        height: 0.2 #1.8
         articulated_agent_urdf: data/robots/hab_spot_arm/urdf/hab_spot_arm.urdf
         articulated_agent_type: "SpotRobot"
         sim_sensors:
@@ -112,8 +112,8 @@ habitat:
             width: 171
             hfov: 55
       agent_1:
-        radius: 0.1 #0.25
-        height: 0.3 #1.8
+        radius: 0.05 #0.25
+        height: 0.2 #1.8
         articulated_agent_urdf: 'data/humanoids/humanoid_data/female2_0.urdf'
         articulated_agent_type: 'KinematicHumanoid'
         rest_pose_data_path: 'data/humanoids/humanoid_data/standing_pose_smplx.pkl'
