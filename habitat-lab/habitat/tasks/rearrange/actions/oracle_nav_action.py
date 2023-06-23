@@ -111,6 +111,7 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
             self._prev_ep_id = self._task._episode_id
         self.skill_done = False
         self.poses = []
+        self.counter = 0
 
     def _get_target_for_idx(self, nav_to_target_idx: int):
         nav_to_obj = self._poss_entities[nav_to_target_idx]
@@ -503,6 +504,30 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         return False
 
     def step(self, *args, is_last_action, **kwargs):
+
+        # if self.counter ==0:
+        #     navigable_point = self._sim.pathfinder.get_random_navigable_point()
+        #     _navmesh_vertices = np.stack(
+        #         self._sim.pathfinder.build_navmesh_vertices(), axis=0
+        #     )
+        #     _island_sizes = [
+        #         self._sim.pathfinder.island_radius(p) for p in _navmesh_vertices
+        #     ]
+        #     _max_island_size = max(_island_sizes)
+        #     largest_size_vertex = _navmesh_vertices[
+        #         np.argmax(_island_sizes)
+        #     ]
+        #     _largest_island_idx = self._sim.pathfinder.get_island(
+        #         largest_size_vertex
+        #     )
+
+        #     start_pos = self._sim.pathfinder.get_random_navigable_point(
+        #             island_index=_largest_island_idx
+        #         )
+        #     #self.cur_articulated_agent.sim_obj.translation = start_pos
+        # self.counter +=1
+
+
         self.skill_done = False
         nav_to_target_idx = kwargs[
             self._action_arg_prefix + "oracle_nav_with_backing_up_action"

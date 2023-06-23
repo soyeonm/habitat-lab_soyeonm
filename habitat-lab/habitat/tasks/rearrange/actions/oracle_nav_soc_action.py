@@ -239,6 +239,29 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
 
     def get_waypoints(self):
         # When resetting, decide 5 navigable points
+        _navmesh_vertices = np.stack(
+            self._sim.pathfinder.build_navmesh_vertices(), axis=0
+        )
+        _island_sizes = [
+            self._sim.pathfinder.island_radius(p) for p in _navmesh_vertices
+        ]
+        _max_island_size = max(_island_sizes)
+        largest_size_vertex = _navmesh_vertices[
+            np.argmax(_island_sizes)
+        ]
+        _largest_island_idx = self._sim.pathfinder.get_island(
+            largest_size_vertex
+        )
+
+        start_pos = self._sim.pathfinder.get_random_navigable_point(
+                island_index=_largest_island_idx
+            )
+
+        self._largest_island_idx = _largest_island_idx
+        self.cur_articulated_agent.sim_obj.translation = start_pos
+        self.initial_height = start_pos[1]
+
+
         self.waypoints = []
         self.waypoint_pointer = 0
         self.prev_navigable_point = np.array(
@@ -254,17 +277,27 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
     def _get_random_waypoint(self):
         # Just sample a new point
         # print("Getting waypoint")
-        navigable_point = self._sim.pathfinder.get_random_navigable_point()
+        #base_T = self.cur_articulated_agent.base_transformation
+
+        navigable_point = self._sim.pathfinder.get_random_navigable_point(island_index=self._largest_island_idx)
+        
+        #self.cur_articulated_agent.base_transformation.translation = start_pos
+        #breakpoint()
+
+
         found_path = False
         # while abs(navigable_point[1] - self.prev_navigable_point[1]) >= 0.1 or self._get_distance(self.prev_navigable_point, navigable_point) <=7: #add distance measure too
         while (
-            abs(navigable_point[1] - self.prev_navigable_point[1]) >= 0.1  or self._get_distance(self.prev_navigable_point, navigable_point) <= 3 or not(found_path)
+            #abs(navigable_point[1] - self.prev_navigable_point[1]) >= 0.1  or self._get_distance(self.prev_navigable_point, navigable_point) <= 3 or not(found_path)
+            self._get_distance(self.prev_navigable_point, navigable_point) <= 5
         ):
-            navigable_point = self._sim.pathfinder.get_random_navigable_point()
-            path = habitat_sim.ShortestPath()
-            path.requested_start = self.prev_navigable_point
-            path.requested_end = navigable_point
-            found_path = self._sim.pathfinder.find_path(path)
+            navigable_point = self._sim.pathfinder.get_random_navigable_point(
+                island_index=self._largest_island_idx
+            )
+            # path = habitat_sim.ShortestPath()
+            # path.requested_start = self.prev_navigable_point
+            # path.requested_end = navigable_point
+            # found_path = self._sim.pathfinder.find_path(path)
 
             
         # print("navigable point is ", navigable_point)
@@ -314,13 +347,17 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         value
         :param point: Vector3 indicating the target point
         """
+
         agent_pos = self.cur_articulated_agent.base_pos
 
         path = habitat_sim.ShortestPath()
         path.requested_start = agent_pos
         path.requested_end = point
         found_path = self._sim.pathfinder.find_path(path)
+        #breakpoint()
+        #print("Found path: ", found_path)
         if not found_path:
+            breakpoint()
             return [agent_pos, point]
         return path.points
 
@@ -337,7 +374,9 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         )
 
         # Offset the base
-        end_pos -= self.cur_articulated_agent.params.base_offset
+        #end_pos -= self.cur_articulated_agent.params.base_offset
+        # if self._counter == 1:
+        #     end_pos -= self.cur_articulated_agent.params.base_offset
         self.humanoid_controller.obj_transform_base.translation = end_pos
 
     def _get_current_pose(self) -> Tuple[np.ndarray, np.ndarray]:
@@ -413,7 +452,14 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         # print("Step called! ", self._counter)
         if self._counter == 0:
             self.get_waypoints()
+            #breakpoint()
             self.waypoint_increased_step = self._counter
+
+        #self.cur_articulated_agent.sim_obj.translation[1] = self.initial_height
+        # self.cur_articulated_agent.sim_obj.translation = np.array(self.cur_articulated_agent.sim_obj.translation)
+        # self.cur_articulated_agent.sim_obj.translation[1] = self.initial_height
+        # self.cur_articulated_agent.sim_obj.translation = mn.Vector3(self.cur_articulated_agent.sim_obj.translation)
+
         print(
             "step ",
             str(self._counter),

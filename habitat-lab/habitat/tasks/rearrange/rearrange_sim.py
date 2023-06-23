@@ -410,7 +410,8 @@ class RearrangeSim(HabitatSim):
 
         navmesh_path = osp.join(base_dir, "navmeshes", scene_name + ".navmesh")
         # If we cannot load the navmesh, try generarting navmesh on the fly.
-        if osp.exists(navmesh_path):
+        #breakpoint()
+        if osp.exists(navmesh_path) and False:
             self.pathfinder.load_nav_mesh(navmesh_path)
         else:
             navmesh_settings = NavMeshSettings()
@@ -426,14 +427,14 @@ class RearrangeSim(HabitatSim):
                 max_climb = self.habitat_config.agents.main_agent.max_climb
             else:
                 raise ValueError(f"Cannot find agent parameters.")
-            navmesh_settings.agent_radius = radius
+            navmesh_settings.agent_radius = 0.1 #radius
             navmesh_settings.agent_height = height
             navmesh_settings.agent_max_climb = max_climb
-
+            navmesh_settings.include_static_objects = True
             self.recompute_navmesh(
                 self.pathfinder,
                 navmesh_settings,
-                include_static_objects=True,
+                #include_static_objects=True,
             )
             os.makedirs(osp.dirname(navmesh_path), exist_ok=True)
             self.pathfinder.save_nav_mesh(navmesh_path)
