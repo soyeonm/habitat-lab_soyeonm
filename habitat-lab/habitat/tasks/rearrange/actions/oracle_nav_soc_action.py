@@ -348,7 +348,10 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         :param point: Vector3 indicating the target point
         """
 
-        agent_pos = self.cur_articulated_agent.base_pos
+        if self._counter == 0:
+            agent_pos = self.cur_articulated_agent.base_pos
+        else:
+            agent_pos = self.temp_human_pos #self.cur_articulated_agent.base_pos
 
         path = habitat_sim.ShortestPath()
         path.requested_start = agent_pos
@@ -372,12 +375,31 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         end_pos = self._sim.step_filter(
             rigid_state.translation, target_rigid_state_trans
         )
+        print("original end pos is ", end_pos)
 
         # Offset the base
         #end_pos -= self.cur_articulated_agent.params.base_offset
         # if self._counter == 1:
         #     end_pos -= self.cur_articulated_agent.params.base_offset
+
+        # Offset the base
+        #end_pos -= self.cur_articulated_agent.params.base_offset
+        import copy
+        if self._counter == 0:
+            breakpoint()
+            print("counter was 0")
+        if self._counter> 1:
+            end_pos += self.cur_articulated_agent.params.base_offset
+        self.temp_human_pos = copy.deepcopy(np.array(end_pos))
+        print("temp human pos is ", self.temp_human_pos)
+        #if self._counter == 1:
+        end_pos -= self.cur_articulated_agent.params.base_offset
+        if self._counter> 1:
+            end_pos -= self.cur_articulated_agent.params.base_offset
+        #end_pos -= 2*self.cur_articulated_agent.params.base_offset
+        print("final end pos is ", end_pos)
         self.humanoid_controller.obj_transform_base.translation = end_pos
+        print("viz human pos is ", self.humanoid_controller.obj_transform_base.translation)
 
     def _get_current_pose(self) -> Tuple[np.ndarray, np.ndarray]:
         base_T = self.cur_articulated_agent.base_transformation
