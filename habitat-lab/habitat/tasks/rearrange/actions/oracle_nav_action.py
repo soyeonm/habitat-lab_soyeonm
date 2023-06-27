@@ -20,6 +20,7 @@ from habitat.tasks.rearrange.utils import place_agent_at_dist_from_pos
 from habitat.tasks.utils import get_angle
 from habitat_sim.physics import VelocityControl
 
+import pickle
 
 @registry.register_task_action
 class OracleNavAction(BaseVelAction, HumanoidJointAction):
@@ -111,7 +112,7 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
             self._prev_ep_id = self._task._episode_id
         self.skill_done = False
         self.poses = []
-        self.counter = 0
+        self._counter = 0
 
     def _get_target_for_idx(self, nav_to_target_idx: int):
         nav_to_obj = self._poss_entities[nav_to_target_idx]
@@ -505,45 +506,51 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
 
     def step(self, *args, is_last_action, **kwargs):
 
-        # if self.counter ==0:
-        #     navigable_point = self._sim.pathfinder.get_random_navigable_point()
-        #     _navmesh_vertices = np.stack(
-        #         self._sim.pathfinder.build_navmesh_vertices(), axis=0
-        #     )
-        #     _island_sizes = [
-        #         self._sim.pathfinder.island_radius(p) for p in _navmesh_vertices
-        #     ]
-        #     _max_island_size = max(_island_sizes)
-        #     largest_size_vertex = _navmesh_vertices[
-        #         np.argmax(_island_sizes)
-        #     ]
-        #     _largest_island_idx = self._sim.pathfinder.get_island(
-        #         largest_size_vertex
-        #     )
+        if self._counter ==0:
+            navigable_point = self._sim.pathfinder.get_random_navigable_point()
+            _navmesh_vertices = np.stack(
+                self._sim.pathfinder.build_navmesh_vertices(), axis=0
+            )
+            _island_sizes = [
+                self._sim.pathfinder.island_radius(p) for p in _navmesh_vertices
+            ]
+            _max_island_size = max(_island_sizes)
+            largest_size_vertex = _navmesh_vertices[
+                np.argmax(_island_sizes)
+            ]
+            _largest_island_idx = self._sim.pathfinder.get_island(
+                largest_size_vertex
+            )
 
-        #     start_pos = self._sim.pathfinder.get_random_navigable_point(
-        #             island_index=_largest_island_idx
-        #         )
-        #     #self.cur_articulated_agent.sim_obj.translation = start_pos
+            start_pos = self._sim.pathfinder.get_random_navigable_point(
+                    island_index=_largest_island_idx
+                )
+            self.cur_articulated_agent.sim_obj.translation = start_pos
         # self.counter +=1
-
+        #breakpoint()
 
         self.skill_done = False
-        nav_to_target_idx = kwargs[
-            self._action_arg_prefix + "oracle_nav_with_backing_up_action"
-        ]
-        if nav_to_target_idx <= 0 or nav_to_target_idx > len(
-            self._poss_entities
-        ):
-            if is_last_action:
-                return self._sim.step(HabitatSimActions.base_velocity)
-            else:
-                return {}
+        if self._counter == 0:
+            nav_to_target_idx = kwargs[
+                self._action_arg_prefix + "oracle_nav_with_backing_up_action"
+            ]
+            if nav_to_target_idx <= 0 or nav_to_target_idx > len(
+                self._poss_entities
+            ):
+                if is_last_action:
+                    return self._sim.step(HabitatSimActions.base_velocity)
+                else:
+                    return {}
 
-        nav_to_target_idx = int(nav_to_target_idx[0]) - 1
-        final_nav_targ, obj_targ_pos = self._get_target_for_idx(
-            nav_to_target_idx
-        )
+            nav_to_target_idx = int(nav_to_target_idx[0]) - 1
+            final_nav_targ, obj_targ_pos = self._get_target_for_idx(
+                nav_to_target_idx
+            )
+        else:
+            final_nav_targ = pickle.load(open('last_human_pose.p', 'rb'))
+            obj_targ_pos = final_nav_targ
+
+        self._counter +=1
         # Get the base transformation
         base_T = self.cur_articulated_agent.base_transformation
         # Get the current path

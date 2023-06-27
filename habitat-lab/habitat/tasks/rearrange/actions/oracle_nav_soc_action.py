@@ -671,6 +671,7 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
                 kwargs[
                     f"{self._action_arg_prefix}human_joints_trans"
                 ] = base_action
+                pickle.dump(np.array(self.cur_articulated_agent.sim_obj.translation), open('last_human_pose.p', 'wb'))
 
                 return HumanoidJointAction.step(
                     self, *args, is_last_action=is_last_action, **kwargs
