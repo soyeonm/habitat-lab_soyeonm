@@ -20,7 +20,7 @@ from habitat.tasks.rearrange.actions.actions import (
 )
 from habitat.tasks.rearrange.utils import place_agent_at_dist_from_pos
 from habitat.tasks.utils import get_angle
-
+import pickle
 
 @registry.register_task_action
 class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
@@ -236,6 +236,7 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         self.skill_done = False
         self._counter = 0
         self.poses = []
+        #self.robot_forward_list = pickle.load(open('robot_forward_list.p', 'rb'))
 
     def get_waypoints(self):
         # When resetting, decide 5 navigable points
@@ -347,11 +348,11 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         value
         :param point: Vector3 indicating the target point
         """
-
-        if self._counter == 0:
-            agent_pos = self.cur_articulated_agent.base_pos
-        else:
-            agent_pos = self.temp_human_pos #self.cur_articulated_agent.base_pos
+        agent_pos = self.cur_articulated_agent.base_pos
+        # if self._counter == 0:
+        #     agent_pos = self.cur_articulated_agent.base_pos
+        # else:
+        #     agent_pos = self.temp_human_pos #self.cur_articulated_agent.base_pos
 
         path = habitat_sim.ShortestPath()
         path.requested_start = agent_pos
@@ -360,9 +361,30 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         #breakpoint()
         #print("Found path: ", found_path)
         if not found_path:
-            breakpoint()
+            #breakpoint()
             return [agent_pos, point]
         return path.points
+
+    def _put_offset_back(self): #make the agent sink again
+        # print("before adding ", self.humanoid_controller.obj_transform_base.translation)
+        # trans = self.cur_articulated_agent.sim_obj.transformation
+        # rigid_state = habitat_sim.RigidState(
+        #     mn.Quaternion.from_matrix(trans.rotation()), trans.translation
+        # )
+        # target_rigid_state_trans = (
+        #     self.humanoid_controller.obj_transform_base.translation
+        # )
+        # end_pos = self._sim.step_filter(
+        #     rigid_state.translation, target_rigid_state_trans
+        # )
+
+        # end_pos += self.cur_articulated_agent.params.base_offset
+        #self.humanoid_controller.obj_transform_base.translation = end_pos
+        self.cur_articulated_agent.sim_obj.translation += self.cur_articulated_agent.params.base_offset
+
+        # #end_pos += self.cur_articulated_agent.params.base_offset
+        # print("after adding ", self.humanoid_controller.obj_transform_base.translation)
+        # pass
 
     def _update_controller_to_navmesh(self):
         trans = self.cur_articulated_agent.sim_obj.transformation
@@ -375,7 +397,7 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         end_pos = self._sim.step_filter(
             rigid_state.translation, target_rigid_state_trans
         )
-        print("original end pos is ", end_pos)
+        #print("original end pos is ", end_pos)
 
         # Offset the base
         #end_pos -= self.cur_articulated_agent.params.base_offset
@@ -384,22 +406,23 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
 
         # Offset the base
         #end_pos -= self.cur_articulated_agent.params.base_offset
-        import copy
-        if self._counter == 0:
-            breakpoint()
-            print("counter was 0")
-        if self._counter> 1:
-            end_pos += self.cur_articulated_agent.params.base_offset
-        self.temp_human_pos = copy.deepcopy(np.array(end_pos))
-        print("temp human pos is ", self.temp_human_pos)
-        #if self._counter == 1:
-        end_pos -= self.cur_articulated_agent.params.base_offset
-        if self._counter> 1:
-            end_pos -= self.cur_articulated_agent.params.base_offset
-        #end_pos -= 2*self.cur_articulated_agent.params.base_offset
-        print("final end pos is ", end_pos)
+        # import copy
+        # if self._counter == 0:
+        #     breakpoint()
+        #     print("counter was 0")
+        # if self._counter> 1:
+        #     end_pos += self.cur_articulated_agent.params.base_offset
+        # self.temp_human_pos = copy.deepcopy(np.array(end_pos))
+        # print("temp human pos is ", self.temp_human_pos)
+        # #if self._counter == 1:
+        # end_pos -= self.cur_articulated_agent.params.base_offset
+        # if self._counter> 1:
+        #     end_pos -= self.cur_articulated_agent.params.base_offset
+        # #end_pos -= 2*self.cur_articulated_agent.params.base_offset
+        # print("final end pos is ", end_pos)
+        #end_pos -= self.cur_articulated_agent.params.base_offset
         self.humanoid_controller.obj_transform_base.translation = end_pos
-        print("viz human pos is ", self.humanoid_controller.obj_transform_base.translation)
+        # print("viz human pos is ", self.humanoid_controller.obj_transform_base.translation)
 
     def _get_current_pose(self) -> Tuple[np.ndarray, np.ndarray]:
         base_T = self.cur_articulated_agent.base_transformation
@@ -450,6 +473,25 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         optimal_dist = np.min(geo_dists)
         return optimal_dist, np.argmin(geo_dists)
 
+    #Just directly do it here
+    def get_humanoid_controller_pose(self):
+        """
+        Obtains the controller joints, offset and base transform in a vectorized form so that it can be passed
+        as an argument to HumanoidJointAction
+        """
+        obj_trans_offset = np.asarray(
+            self.humanoid_controller.obj_transform_offset.transposed()
+        ).flatten()
+        print("humanoid controller base before", self.humanoid_controller.obj_transform_base)
+        base = mn.Matrix4(np.array(self.humanoid_controller.obj_transform_base))
+        base.translation -= self.cur_articulated_agent.params.base_offset
+        obj_trans_base = np.asarray(
+            #self.humanoid_controller.obj_transform_base.transposed()
+            base.transposed()
+        ).flatten()
+        print("humanoid controller base ", self.humanoid_controller.obj_transform_base)
+        return self.humanoid_controller.joint_pose + list(obj_trans_offset) + list(obj_trans_base)
+
     def step(self, *args, is_last_action, **kwargs):
         # nav_to_target_idx = kwargs[
         #     self._action_arg_prefix + "oracle_nav_action"
@@ -476,6 +518,8 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
             self.get_waypoints()
             #breakpoint()
             self.waypoint_increased_step = self._counter
+        else:
+            self._put_offset_back()
 
         #self.cur_articulated_agent.sim_obj.translation[1] = self.initial_height
         # self.cur_articulated_agent.sim_obj.translation = np.array(self.cur_articulated_agent.sim_obj.translation)
@@ -555,6 +599,7 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
 
             # Compute heading angle (2D calculation)
             robot_forward = robot_forward[[0, 2]]
+            #robot_forward = self.robot_forward_list[self._counter-1]
             rel_targ = rel_targ[[0, 2]]
             rel_pos = (obj_targ_pos - robot_pos)[[0, 2]]
 
@@ -596,7 +641,13 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
 
             elif self.motion_type == "human_joints":
                 # Update the humanoid base
+                #breakpoint()
                 self.humanoid_controller.obj_transform_base = base_T
+                #print("self.humanoid_controller.obj_transform_base is ", self.humanoid_controller.obj_transform_base)
+                # if self._counter == 1:
+                #     self.humanoid_controller.obj_transform_base = base_T
+                # else:
+                #     self.humanoid_controller.obj_transform_base = self.temp_human_pos
                 if not at_goal:
                     if dist_to_final_nav_targ < self._config.dist_thresh:
                         # Look at the object
@@ -616,7 +667,7 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
                         print("Completed!")
 
                 self._update_controller_to_navmesh()
-                base_action = self.humanoid_controller.get_pose()
+                base_action = self.get_humanoid_controller_pose() #self.humanoid_controller.get_pose()
                 kwargs[
                     f"{self._action_arg_prefix}human_joints_trans"
                 ] = base_action

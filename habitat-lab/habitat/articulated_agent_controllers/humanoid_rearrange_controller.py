@@ -276,4 +276,5 @@ class HumanoidRearrangeController:
         obj_trans_base = np.asarray(
             self.obj_transform_base.transposed()
         ).flatten()
+        breakpoint()
         return self.joint_pose + list(obj_trans_offset) + list(obj_trans_base)
