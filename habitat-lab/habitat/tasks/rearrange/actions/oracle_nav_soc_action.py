@@ -482,14 +482,14 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         obj_trans_offset = np.asarray(
             self.humanoid_controller.obj_transform_offset.transposed()
         ).flatten()
-        print("humanoid controller base before", self.humanoid_controller.obj_transform_base)
+        #print("humanoid controller base before", self.humanoid_controller.obj_transform_base)
         base = mn.Matrix4(np.array(self.humanoid_controller.obj_transform_base))
         base.translation -= self.cur_articulated_agent.params.base_offset
         obj_trans_base = np.asarray(
             #self.humanoid_controller.obj_transform_base.transposed()
             base.transposed()
         ).flatten()
-        print("humanoid controller base ", self.humanoid_controller.obj_transform_base)
+        #print("humanoid controller base ", self.humanoid_controller.obj_transform_base)
         return self.humanoid_controller.joint_pose + list(obj_trans_offset) + list(obj_trans_base)
 
     def step(self, *args, is_last_action, **kwargs):
