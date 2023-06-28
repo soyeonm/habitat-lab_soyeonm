@@ -16,6 +16,10 @@ from habitat.tasks.rearrange.actions.actions import (
     BaseVelNonCylinderAction,
     HumanoidJointAction,
 )
+
+from habitat.tasks.rearrange.rearrange_sensors import (
+    HumanLastPoseSensor
+)
 from habitat.tasks.rearrange.utils import place_agent_at_dist_from_pos
 from habitat.tasks.utils import get_angle
 from habitat_sim.physics import VelocityControl
@@ -112,7 +116,7 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
             self._prev_ep_id = self._task._episode_id
         self.skill_done = False
         self.poses = []
-        self._counter = 0
+        self.counter = 0
 
     def _get_target_for_idx(self, nav_to_target_idx: int):
         nav_to_obj = self._poss_entities[nav_to_target_idx]
@@ -506,7 +510,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
 
     def step(self, *args, is_last_action, **kwargs):
 
-        if self._counter ==0:
+        if self.counter ==0:
             navigable_point = self._sim.pathfinder.get_random_navigable_point()
             _navmesh_vertices = np.stack(
                 self._sim.pathfinder.build_navmesh_vertices(), axis=0
@@ -530,7 +534,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         #breakpoint()
 
         self.skill_done = False
-        if self._counter == 0:
+        if self.counter == 0:
             nav_to_target_idx = kwargs[
                 self._action_arg_prefix + "oracle_nav_with_backing_up_action"
             ]
@@ -547,10 +551,12 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 nav_to_target_idx
             )
         else:
-            final_nav_targ = pickle.load(open('last_human_pose.p', 'rb'))
+            #final_nav_targ = pickle.load(open('last_human_pose.p', 'rb'))
+            #breakpoint()
+            final_nav_targ = np.array(self._sim.get_agent_data(1).articulated_agent.sim_obj.translation) #observations[HumanLastPoseSensor.cls_uuid].cpu() #read from HumanLastPoseSensor
             obj_targ_pos = final_nav_targ
 
-        self._counter +=1
+        self.counter +=1
         # Get the base transformation
         base_T = self.cur_articulated_agent.base_transformation
         # Get the current path

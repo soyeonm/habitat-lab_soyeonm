@@ -56,8 +56,8 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         self.skill_done = False
 
         # Just wrote this
-        self._counter = 0
-        self._waypoint_count = 20
+        self.counter = 0
+        self._waypoint_count = 100
         print("Oracle nav soc action is called!")
 
         self.poses: List[np.ndarray] = []
@@ -234,7 +234,7 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
             self._targets = {}
             self._prev_ep_id = self._task._episode_id
         self.skill_done = False
-        self._counter = 0
+        self.counter = 0
         self.poses = []
         #self.robot_forward_list = pickle.load(open('robot_forward_list.p', 'rb'))
 
@@ -349,7 +349,7 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         :param point: Vector3 indicating the target point
         """
         agent_pos = self.cur_articulated_agent.base_pos
-        # if self._counter == 0:
+        # if self.counter == 0:
         #     agent_pos = self.cur_articulated_agent.base_pos
         # else:
         #     agent_pos = self.temp_human_pos #self.cur_articulated_agent.base_pos
@@ -401,22 +401,22 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
 
         # Offset the base
         #end_pos -= self.cur_articulated_agent.params.base_offset
-        # if self._counter == 1:
+        # if self.counter == 1:
         #     end_pos -= self.cur_articulated_agent.params.base_offset
 
         # Offset the base
         #end_pos -= self.cur_articulated_agent.params.base_offset
         # import copy
-        # if self._counter == 0:
+        # if self.counter == 0:
         #     breakpoint()
         #     print("counter was 0")
-        # if self._counter> 1:
+        # if self.counter> 1:
         #     end_pos += self.cur_articulated_agent.params.base_offset
         # self.temp_human_pos = copy.deepcopy(np.array(end_pos))
         # print("temp human pos is ", self.temp_human_pos)
-        # #if self._counter == 1:
+        # #if self.counter == 1:
         # end_pos -= self.cur_articulated_agent.params.base_offset
-        # if self._counter> 1:
+        # if self.counter> 1:
         #     end_pos -= self.cur_articulated_agent.params.base_offset
         # #end_pos -= 2*self.cur_articulated_agent.params.base_offset
         # print("final end pos is ", end_pos)
@@ -510,14 +510,14 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         # final_nav_targ, obj_targ_pos = self._get_target_for_idx(
         #    nav_to_target_idx
         #
-        # if self._counter ==0:
+        # if self.counter ==0:
         #     self.prev_navigable_point = np.array(self.cur_articulated_agent.base_pos)
         self.skill_done = False
-        # print("Step called! ", self._counter)
-        if self._counter == 0:
+        # print("Step called! ", self.counter)
+        if self.counter == 0:
             self.get_waypoints()
             #breakpoint()
-            self.waypoint_increased_step = self._counter
+            self.waypoint_increased_step = self.counter
         else:
             self._put_offset_back()
 
@@ -528,7 +528,7 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
 
         print(
             "step ",
-            str(self._counter),
+            str(self.counter),
             ": dist is ",
             self._get_distance(
                 self._get_current_pose()[0],
@@ -539,15 +539,15 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         # print("cur pose is ",self._get_current_pose() )
         print(
             "step ",
-            str(self._counter),
+            str(self.counter),
             ": cur pose is ",
             self._get_current_pose()[0],
         )
         # print("prev navigable point is ", self.prev_navigable_point)
-        # if self._counter %20==0:
+        # if self.counter %20==0:
         # If almost there, resample
         # TODO: change this to at_goal
-        if self._counter > 0:
+        if self.counter > 0:
             stuck = self._decide_if_stuck(
                 self.prev_pose, self._get_current_pose()
             )
@@ -562,8 +562,8 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
                 stuck or reached_waypoint
             ):
                 self.waypoint_pointer += 1
-                print("step ", str(self._counter), ": NEW WAYPOINT!")
-                self.waypoint_increased_step = self._counter
+                print("step ", str(self.counter), ": NEW WAYPOINT!")
+                self.waypoint_increased_step = self.counter
 
         final_nav_targ, obj_targ_pos = (
             self.waypoints[self.waypoint_pointer],
@@ -582,7 +582,7 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         # Visualize waypoint pointer and my pose
         # self.find_short_path_from_two_points(self.waypoints[self.waypoint_pointer], robot_pos)
 
-        self._counter += 1
+        self.counter += 1
         self.prev_pose = self._get_current_pose()
         if curr_path_points is None:
             raise Exception
@@ -599,7 +599,7 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
 
             # Compute heading angle (2D calculation)
             robot_forward = robot_forward[[0, 2]]
-            #robot_forward = self.robot_forward_list[self._counter-1]
+            #robot_forward = self.robot_forward_list[self.counter-1]
             rel_targ = rel_targ[[0, 2]]
             rel_pos = (obj_targ_pos - robot_pos)[[0, 2]]
 
@@ -644,7 +644,7 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
                 #breakpoint()
                 self.humanoid_controller.obj_transform_base = base_T
                 #print("self.humanoid_controller.obj_transform_base is ", self.humanoid_controller.obj_transform_base)
-                # if self._counter == 1:
+                # if self.counter == 1:
                 #     self.humanoid_controller.obj_transform_base = base_T
                 # else:
                 #     self.humanoid_controller.obj_transform_base = self.temp_human_pos
@@ -671,7 +671,8 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
                 kwargs[
                     f"{self._action_arg_prefix}human_joints_trans"
                 ] = base_action
-                pickle.dump(np.array(self.cur_articulated_agent.sim_obj.translation), open('last_human_pose.p', 'wb'))
+                #pickle.dump(np.array(self.cur_articulated_agent.sim_obj.translation), open('last_human_pose.p', 'wb'))
+                print("ORI pickled human pose", self.cur_articulated_agent.sim_obj.translation)
 
                 return HumanoidJointAction.step(
                     self, *args, is_last_action=is_last_action, **kwargs

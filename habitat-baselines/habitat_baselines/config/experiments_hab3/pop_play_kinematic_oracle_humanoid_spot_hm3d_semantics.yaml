@@ -30,6 +30,7 @@ defaults:
     - localization_sensor
     - has_finished_oracle_nav
     - other_agent_gps
+    - human_last_pose_sensor
   - /habitat/task/actions@habitat.task.actions.agent_0_arm_action: arm_action
   - override /habitat/task/rearrange: multi_agent_tidy_house_base_spot_hm3d_semantics
   # For Spot observation space
@@ -83,6 +84,7 @@ habitat:
       - agent_0_localization_sensor
       - agent_0_has_finished_oracle_nav
       - agent_0_other_agent_gps
+      - agent_0_human_last_pose_sensor
       - agent_1_head_depth
       - agent_1_relative_resting_position
       - agent_1_obj_start_sensor

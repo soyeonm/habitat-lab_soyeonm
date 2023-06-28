@@ -629,6 +629,11 @@ class HasFinishedOracleNavSensorConfig(LabSensorConfig):
 
 
 @dataclass
+class HumanLastPoseSensorConfig(LabSensorConfig):
+    type: str = "HumanLastPoseSensor"
+
+
+@dataclass
 class OtherAgentGpsConfig(LabSensorConfig):
     type: str = "OtherAgentGps"
 
@@ -2077,6 +2082,12 @@ cs.store(
     group="habitat/task/lab_sensors",
     name="has_finished_oracle_nav",
     node=HasFinishedOracleNavSensorConfig,
+) 
+cs.store(
+    package="habitat.task.lab_sensors.human_last_pose_sensor",
+    group="habitat/task/lab_sensors",
+    name="human_last_pose_sensor",
+    node=HumanLastPoseSensorConfig,
 )
 cs.store(
     package="habitat.task.measurements.compute_soc_nav_metric",
