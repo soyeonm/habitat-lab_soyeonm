@@ -1,8 +1,3 @@
-# Copyright (c) Meta Platforms, Inc. and its affiliates.
-# This source code is licensed under the MIT license found in the
-# LICENSE file in the root directory of this source tree.
-
-
 import magnum as mn
 import numpy as np
 from gym import spaces
@@ -16,10 +11,15 @@ from habitat.tasks.rearrange.actions.actions import (
     BaseVelNonCylinderAction,
     HumanoidJointAction,
 )
+
+# from habitat.tasks.rearrange.rearrange_sensors import (
+#     HumanLastPoseSensor
+# )
 from habitat.tasks.rearrange.utils import place_agent_at_dist_from_pos
 from habitat.tasks.utils import get_angle
 from habitat_sim.physics import VelocityControl
 
+import pickle
 
 @registry.register_task_action
 class OracleNavAction(BaseVelAction, HumanoidJointAction):
@@ -111,6 +111,7 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
             self._prev_ep_id = self._task._episode_id
         self.skill_done = False
         self.poses = []
+        self.counter = 0
 
     def _get_target_for_idx(self, nav_to_target_idx: int):
         nav_to_obj = self._poss_entities[nav_to_target_idx]
@@ -357,6 +358,71 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
             }
         )
 
+    # Copied from motion_viewer.py
+    def find_short_path_from_two_points(
+        self, sample1=None, sample2=None
+    ) -> habitat_sim.ShortestPath():
+        """
+        Finds two random points on the NavMesh, calculates a shortest path between
+        the two, and creates a trajectory object to visualize the path.
+        """
+        # if self.spline_path_traj_obj_id >= 0:
+        #     self._sim.get_rigid_object_manager().remove_object_by_id(
+        #         self.spline_path_traj_obj_id
+        #     )
+        self.spline_path_traj_obj_id = -1
+
+        found_path = False
+        while not found_path:
+            # sample1 = None
+            # sample2 = None
+            while sample1 is None or sample2 is None:
+                sample1 = (
+                    sample1
+                    or self._sim.pathfinder.get_random_navigable_point()
+                )
+                sample2 = (
+                    sample2
+                    or self._sim.pathfinder.get_random_navigable_point()
+                )
+
+                # constraint points to be on first floor
+                if sample1[1] != sample2[1] or sample1[1] > 2:
+                    logger.warn(
+                        "Warning: points are out of acceptable area, replacing with randoms"
+                    )
+                    sample1, sample2 = None, None
+
+            if sample1[1] != sample2[1] or sample1[1] > 2:
+                print(
+                    "Warning: points are out of acceptable area, replacing with randoms"
+                )
+                sample1, sample2 = None, None
+
+            path = habitat_sim.ShortestPath()
+            path.requested_start = sample1
+            path.requested_end = sample2
+            found_path = self._sim.pathfinder.find_path(path)
+            print("found path is ", found_path)
+            self.path_points = path.points
+
+        spline_points = habitat_sim.geo.build_catmull_rom_spline(
+            path.points, 10, 0.75
+        )
+        path.points = spline_points
+
+        colors_spline = [mn.Color3.blue(), mn.Color3.green()]
+
+        self.spline_path_traj_obj_id = (
+            self._sim.add_gradient_trajectory_object(
+                traj_vis_name=f"spline_{time.strftime('%Y-%m-%d_%H-%M-%S')}",
+                colors=colors_spline,
+                points=spline_points,
+                radius=0.01,
+            )
+        )
+        return path
+
     def _get_target_for_idx(self, nav_to_target_idx: int):
         if nav_to_target_idx not in self._targets:
             nav_to_obj = self._poss_entities[nav_to_target_idx]
@@ -438,28 +504,61 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         return False
 
     def step(self, *args, is_last_action, **kwargs):
-        self.skill_done = False
-        nav_to_target_idx = kwargs[
-            self._action_arg_prefix + "oracle_nav_with_backing_up_action"
-        ]
-        if nav_to_target_idx <= 0 or nav_to_target_idx > len(
-            self._poss_entities
-        ):
-            if is_last_action:
-                return self._sim.step(HabitatSimActions.base_velocity)
-            else:
-                return {}
 
-        nav_to_target_idx = int(nav_to_target_idx[0]) - 1
-        final_nav_targ, obj_targ_pos = self._get_target_for_idx(
-            nav_to_target_idx
-        )
+        if self.counter ==0:
+            navigable_point = self._sim.pathfinder.get_random_navigable_point()
+            _navmesh_vertices = np.stack(
+                self._sim.pathfinder.build_navmesh_vertices(), axis=0
+            )
+            _island_sizes = [
+                self._sim.pathfinder.island_radius(p) for p in _navmesh_vertices
+            ]
+            _max_island_size = max(_island_sizes)
+            largest_size_vertex = _navmesh_vertices[
+                np.argmax(_island_sizes)
+            ]
+            _largest_island_idx = self._sim.pathfinder.get_island(
+                largest_size_vertex
+            )
+
+            start_pos = self._sim.pathfinder.get_random_navigable_point(
+                    island_index=_largest_island_idx
+                )
+            self.cur_articulated_agent.sim_obj.translation = start_pos
+        # self.counter +=1
+        #breakpoint()
+
+        self.skill_done = False
+        if self.counter == 0:
+            nav_to_target_idx = kwargs[
+                self._action_arg_prefix + "oracle_nav_with_backing_up_action"
+            ]
+            if nav_to_target_idx <= 0 or nav_to_target_idx > len(
+                self._poss_entities
+            ):
+                if is_last_action:
+                    return self._sim.step(HabitatSimActions.base_velocity)
+                else:
+                    return {}
+
+            nav_to_target_idx = int(nav_to_target_idx[0]) - 1
+            final_nav_targ, obj_targ_pos = self._get_target_for_idx(
+                nav_to_target_idx
+            )
+        else:
+            #final_nav_targ = pickle.load(open('last_human_pose.p', 'rb'))
+            #breakpoint()
+            final_nav_targ = np.array(self._sim.get_agent_data(1).articulated_agent.sim_obj.translation) #observations[HumanLastPoseSensor.cls_uuid].cpu() #read from HumanLastPoseSensor
+            obj_targ_pos = final_nav_targ
+
+        self.counter +=1
         # Get the base transformation
         base_T = self.cur_articulated_agent.base_transformation
         # Get the current path
         curr_path_points = self._path_to_point(final_nav_targ)
         # Get the robot position
         robot_pos = np.array(self.cur_articulated_agent.base_pos)
+
         self.poses.append(robot_pos)
         if curr_path_points is None:
             raise RuntimeError("Pathfinder returns empty list")
@@ -493,6 +592,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
 
             # Planning to see if the robot needs to do back-up
             need_move_backward = False
+            #self.find_short_path_from_two_points(final_nav_targ, robot_pos)
             if (
                 dist_to_final_nav_targ >= self._config.dist_thresh
                 and angle_to_target >= self._config.turn_thresh
