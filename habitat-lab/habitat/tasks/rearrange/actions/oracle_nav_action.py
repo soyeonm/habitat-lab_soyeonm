@@ -258,10 +258,10 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
                     # 0: stop, 1: forward, 2: left, 3: right
                     if action_to_take == 1:  # forward
                         vel = [self._config.forward_velocity, 0]
-                    elif action_to_take == 2:  # turn left
-                        vel = [0, -self._config.turn_velocity]
+                    elif action_to_take == 2:  # turn left #Just changed for oGN
+                        vel = [0, self._config.turn_velocity] #[0, -self._config.turn_velocity]
                     elif action_to_take == 3:  # turn right
-                        vel = [0, self._config.turn_velocity]
+                        vel = [0, -self._config.turn_velocity] #[0, self._config.turn_velocity]
                     else:  # stop
                         vel = [0, 0]
                     # else:

@@ -373,7 +373,7 @@ class BaseVelAction(ArticulatedAgentAction):
         self.base_vel_ctrl.ang_vel_is_local = True
         self._allow_dyn_slide = self._config.get("allow_dyn_slide", True)
         self._lin_speed = self._config.lin_speed
-        self._ang_speed = 60 #self._config.ang_speed
+        self._ang_speed = 20 #60  # self._config.ang_speed
         self._allow_back = self._config.allow_back
 
     @property
@@ -454,7 +454,7 @@ class BaseVelAction(ArticulatedAgentAction):
         lin_vel, ang_vel = kwargs[self._action_arg_prefix + "base_vel"]
         lin_vel = np.clip(lin_vel, -1, 1) * self._lin_speed
         ang_vel = np.clip(ang_vel, -1, 1) * self._ang_speed
-        #breakpoint()
+        # breakpoint()
         if not self._allow_back:
             lin_vel = np.maximum(lin_vel, 0)
 
