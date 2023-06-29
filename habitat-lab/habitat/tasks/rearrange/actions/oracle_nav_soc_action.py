@@ -3,6 +3,7 @@
 # LICENSE file in the root directory of this source tree.
 
 
+import pickle
 from typing import List, Tuple
 
 import magnum as mn
@@ -20,7 +21,7 @@ from habitat.tasks.rearrange.actions.actions import (
 )
 from habitat.tasks.rearrange.utils import place_agent_at_dist_from_pos
 from habitat.tasks.utils import get_angle
-import pickle
+
 
 @registry.register_task_action
 class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
@@ -150,6 +151,7 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         self, sample1=None, sample2=None
     ) -> habitat_sim.ShortestPath():
         import time
+
         """
         Finds two random points on the NavMesh, calculates a shortest path between
         the two, and creates a trajectory object to visualize the path.
@@ -236,7 +238,7 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         self.skill_done = False
         self.counter = 0
         self.poses = []
-        #self.robot_forward_list = pickle.load(open('robot_forward_list.p', 'rb'))
+        # self.robot_forward_list = pickle.load(open('robot_forward_list.p', 'rb'))
 
     def get_waypoints(self):
         # When resetting, decide 5 navigable points
@@ -247,21 +249,18 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
             self._sim.pathfinder.island_radius(p) for p in _navmesh_vertices
         ]
         _max_island_size = max(_island_sizes)
-        largest_size_vertex = _navmesh_vertices[
-            np.argmax(_island_sizes)
-        ]
+        largest_size_vertex = _navmesh_vertices[np.argmax(_island_sizes)]
         _largest_island_idx = self._sim.pathfinder.get_island(
             largest_size_vertex
         )
 
         start_pos = self._sim.pathfinder.get_random_navigable_point(
-                island_index=_largest_island_idx
-            )
+            island_index=_largest_island_idx
+        )
 
         self._largest_island_idx = _largest_island_idx
         self.cur_articulated_agent.sim_obj.translation = start_pos
         self.initial_height = start_pos[1]
-
 
         self.waypoints = []
         self.waypoint_pointer = 0
@@ -278,19 +277,21 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
     def _get_random_waypoint(self):
         # Just sample a new point
         # print("Getting waypoint")
-        #base_T = self.cur_articulated_agent.base_transformation
+        # base_T = self.cur_articulated_agent.base_transformation
 
-        navigable_point = self._sim.pathfinder.get_random_navigable_point(island_index=self._largest_island_idx)
-        
-        #self.cur_articulated_agent.base_transformation.translation = start_pos
-        #breakpoint()
+        navigable_point = self._sim.pathfinder.get_random_navigable_point(
+            island_index=self._largest_island_idx
+        )
 
+        # self.cur_articulated_agent.base_transformation.translation = start_pos
+        # breakpoint()
 
         found_path = False
         # while abs(navigable_point[1] - self.prev_navigable_point[1]) >= 0.1 or self._get_distance(self.prev_navigable_point, navigable_point) <=7: #add distance measure too
         while (
-            #abs(navigable_point[1] - self.prev_navigable_point[1]) >= 0.1  or self._get_distance(self.prev_navigable_point, navigable_point) <= 3 or not(found_path)
-            self._get_distance(self.prev_navigable_point, navigable_point) <= 5
+            # abs(navigable_point[1] - self.prev_navigable_point[1]) >= 0.1  or self._get_distance(self.prev_navigable_point, navigable_point) <= 3 or not(found_path)
+            self._get_distance(self.prev_navigable_point, navigable_point)
+            <= 5
         ):
             navigable_point = self._sim.pathfinder.get_random_navigable_point(
                 island_index=self._largest_island_idx
@@ -300,7 +301,6 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
             # path.requested_end = navigable_point
             # found_path = self._sim.pathfinder.find_path(path)
 
-            
         # print("navigable point is ", navigable_point)
         # print("dist is ", self._get_distance(self.prev_navigable_point, navigable_point))
         return navigable_point, navigable_point
@@ -358,14 +358,14 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         path.requested_start = agent_pos
         path.requested_end = point
         found_path = self._sim.pathfinder.find_path(path)
-        #breakpoint()
-        #print("Found path: ", found_path)
+        # breakpoint()
+        # print("Found path: ", found_path)
         if not found_path:
-            #breakpoint()
+            # breakpoint()
             return [agent_pos, point]
         return path.points
 
-    def _put_offset_back(self): #make the agent sink again
+    def _put_offset_back(self):  # make the agent sink again
         # print("before adding ", self.humanoid_controller.obj_transform_base.translation)
         # trans = self.cur_articulated_agent.sim_obj.transformation
         # rigid_state = habitat_sim.RigidState(
@@ -379,8 +379,10 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         # )
 
         # end_pos += self.cur_articulated_agent.params.base_offset
-        #self.humanoid_controller.obj_transform_base.translation = end_pos
-        self.cur_articulated_agent.sim_obj.translation += self.cur_articulated_agent.params.base_offset
+        # self.humanoid_controller.obj_transform_base.translation = end_pos
+        self.cur_articulated_agent.sim_obj.translation += (
+            self.cur_articulated_agent.params.base_offset
+        )
 
         # #end_pos += self.cur_articulated_agent.params.base_offset
         # print("after adding ", self.humanoid_controller.obj_transform_base.translation)
@@ -397,15 +399,15 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         end_pos = self._sim.step_filter(
             rigid_state.translation, target_rigid_state_trans
         )
-        #print("original end pos is ", end_pos)
+        # print("original end pos is ", end_pos)
 
         # Offset the base
-        #end_pos -= self.cur_articulated_agent.params.base_offset
+        # end_pos -= self.cur_articulated_agent.params.base_offset
         # if self.counter == 1:
         #     end_pos -= self.cur_articulated_agent.params.base_offset
 
         # Offset the base
-        #end_pos -= self.cur_articulated_agent.params.base_offset
+        # end_pos -= self.cur_articulated_agent.params.base_offset
         # import copy
         # if self.counter == 0:
         #     breakpoint()
@@ -420,7 +422,7 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         #     end_pos -= self.cur_articulated_agent.params.base_offset
         # #end_pos -= 2*self.cur_articulated_agent.params.base_offset
         # print("final end pos is ", end_pos)
-        #end_pos -= self.cur_articulated_agent.params.base_offset
+        # end_pos -= self.cur_articulated_agent.params.base_offset
         self.humanoid_controller.obj_transform_base.translation = end_pos
         # print("viz human pos is ", self.humanoid_controller.obj_transform_base.translation)
 
@@ -473,7 +475,7 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         optimal_dist = np.min(geo_dists)
         return optimal_dist, np.argmin(geo_dists)
 
-    #Just directly do it here
+    # Just directly do it here
     def get_humanoid_controller_pose(self):
         """
         Obtains the controller joints, offset and base transform in a vectorized form so that it can be passed
@@ -482,15 +484,21 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         obj_trans_offset = np.asarray(
             self.humanoid_controller.obj_transform_offset.transposed()
         ).flatten()
-        #print("humanoid controller base before", self.humanoid_controller.obj_transform_base)
-        base = mn.Matrix4(np.array(self.humanoid_controller.obj_transform_base))
+        # print("humanoid controller base before", self.humanoid_controller.obj_transform_base)
+        base = mn.Matrix4(
+            np.array(self.humanoid_controller.obj_transform_base)
+        )
         base.translation -= self.cur_articulated_agent.params.base_offset
         obj_trans_base = np.asarray(
-            #self.humanoid_controller.obj_transform_base.transposed()
+            # self.humanoid_controller.obj_transform_base.transposed()
             base.transposed()
         ).flatten()
-        #print("humanoid controller base ", self.humanoid_controller.obj_transform_base)
-        return self.humanoid_controller.joint_pose + list(obj_trans_offset) + list(obj_trans_base)
+        # print("humanoid controller base ", self.humanoid_controller.obj_transform_base)
+        return (
+            self.humanoid_controller.joint_pose
+            + list(obj_trans_offset)
+            + list(obj_trans_base)
+        )
 
     def step(self, *args, is_last_action, **kwargs):
         # nav_to_target_idx = kwargs[
@@ -516,12 +524,12 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         # print("Step called! ", self.counter)
         if self.counter == 0:
             self.get_waypoints()
-            #breakpoint()
+            # breakpoint()
             self.waypoint_increased_step = self.counter
         else:
             self._put_offset_back()
 
-        #self.cur_articulated_agent.sim_obj.translation[1] = self.initial_height
+        # self.cur_articulated_agent.sim_obj.translation[1] = self.initial_height
         # self.cur_articulated_agent.sim_obj.translation = np.array(self.cur_articulated_agent.sim_obj.translation)
         # self.cur_articulated_agent.sim_obj.translation[1] = self.initial_height
         # self.cur_articulated_agent.sim_obj.translation = mn.Vector3(self.cur_articulated_agent.sim_obj.translation)
@@ -578,7 +586,7 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
         curr_path_points = self._path_to_point(final_nav_targ)
         robot_pos = np.array(self.cur_articulated_agent.base_pos)
         self.poses.append(robot_pos)
-        #self.find_short_path_from_two_points(robot_pos,self.waypoints[self.waypoint_pointer])
+        # self.find_short_path_from_two_points(robot_pos,self.waypoints[self.waypoint_pointer])
         # Visualize waypoint pointer and my pose
         # self.find_short_path_from_two_points(self.waypoints[self.waypoint_pointer], robot_pos)
 
@@ -599,7 +607,7 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
 
             # Compute heading angle (2D calculation)
             robot_forward = robot_forward[[0, 2]]
-            #robot_forward = self.robot_forward_list[self.counter-1]
+            # robot_forward = self.robot_forward_list[self.counter-1]
             rel_targ = rel_targ[[0, 2]]
             rel_pos = (obj_targ_pos - robot_pos)[[0, 2]]
 
@@ -641,9 +649,9 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
 
             elif self.motion_type == "human_joints":
                 # Update the humanoid base
-                #breakpoint()
+                # breakpoint()
                 self.humanoid_controller.obj_transform_base = base_T
-                #print("self.humanoid_controller.obj_transform_base is ", self.humanoid_controller.obj_transform_base)
+                # print("self.humanoid_controller.obj_transform_base is ", self.humanoid_controller.obj_transform_base)
                 # if self.counter == 1:
                 #     self.humanoid_controller.obj_transform_base = base_T
                 # else:
@@ -667,12 +675,17 @@ class OracleNavSocAction(BaseVelAction, HumanoidJointAction):
                         print("Completed!")
 
                 self._update_controller_to_navmesh()
-                base_action = self.get_humanoid_controller_pose() #self.humanoid_controller.get_pose()
+                base_action = (
+                    self.get_humanoid_controller_pose()
+                )  # self.humanoid_controller.get_pose()
                 kwargs[
                     f"{self._action_arg_prefix}human_joints_trans"
                 ] = base_action
-                #pickle.dump(np.array(self.cur_articulated_agent.sim_obj.translation), open('last_human_pose.p', 'wb'))
-                print("ORI pickled human pose", self.cur_articulated_agent.sim_obj.translation)
+                # pickle.dump(np.array(self.cur_articulated_agent.sim_obj.translation), open('last_human_pose.p', 'wb'))
+                print(
+                    "ORI pickled human pose",
+                    self.cur_articulated_agent.sim_obj.translation,
+                )
 
                 return HumanoidJointAction.step(
                     self, *args, is_last_action=is_last_action, **kwargs

@@ -1,3 +1,5 @@
+import pickle
+
 import magnum as mn
 import numpy as np
 from gym import spaces
@@ -19,7 +21,6 @@ from habitat.tasks.rearrange.utils import place_agent_at_dist_from_pos
 from habitat.tasks.utils import get_angle
 from habitat_sim.physics import VelocityControl
 
-import pickle
 
 @registry.register_task_action
 class OracleNavAction(BaseVelAction, HumanoidJointAction):
@@ -504,29 +505,27 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         return False
 
     def step(self, *args, is_last_action, **kwargs):
-
-        if self.counter ==0:
+        if self.counter == 0:
             navigable_point = self._sim.pathfinder.get_random_navigable_point()
             _navmesh_vertices = np.stack(
                 self._sim.pathfinder.build_navmesh_vertices(), axis=0
             )
             _island_sizes = [
-                self._sim.pathfinder.island_radius(p) for p in _navmesh_vertices
+                self._sim.pathfinder.island_radius(p)
+                for p in _navmesh_vertices
             ]
             _max_island_size = max(_island_sizes)
-            largest_size_vertex = _navmesh_vertices[
-                np.argmax(_island_sizes)
-            ]
+            largest_size_vertex = _navmesh_vertices[np.argmax(_island_sizes)]
             _largest_island_idx = self._sim.pathfinder.get_island(
                 largest_size_vertex
             )
 
             start_pos = self._sim.pathfinder.get_random_navigable_point(
-                    island_index=_largest_island_idx
-                )
+                island_index=_largest_island_idx
+            )
             self.cur_articulated_agent.sim_obj.translation = start_pos
         # self.counter +=1
-        #breakpoint()
+        # breakpoint()
 
         self.skill_done = False
         if self.counter == 0:
@@ -546,12 +545,16 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 nav_to_target_idx
             )
         else:
-            #final_nav_targ = pickle.load(open('last_human_pose.p', 'rb'))
-            #breakpoint()
-            final_nav_targ = np.array(self._sim.get_agent_data(1).articulated_agent.sim_obj.translation) #observations[HumanLastPoseSensor.cls_uuid].cpu() #read from HumanLastPoseSensor
+            # final_nav_targ = pickle.load(open('last_human_pose.p', 'rb'))
+            # breakpoint()
+            final_nav_targ = np.array(
+                self._sim.get_agent_data(
+                    1
+                ).articulated_agent.sim_obj.translation
+            )  # observations[HumanLastPoseSensor.cls_uuid].cpu() #read from HumanLastPoseSensor
             obj_targ_pos = final_nav_targ
 
-        self.counter +=1
+        self.counter += 1
         # Get the base transformation
         base_T = self.cur_articulated_agent.base_transformation
         # Get the current path
@@ -592,7 +595,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
 
             # Planning to see if the robot needs to do back-up
             need_move_backward = False
-            #self.find_short_path_from_two_points(final_nav_targ, robot_pos)
+            # self.find_short_path_from_two_points(final_nav_targ, robot_pos)
             if (
                 dist_to_final_nav_targ >= self._config.dist_thresh
                 and angle_to_target >= self._config.turn_thresh
