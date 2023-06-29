@@ -57,4 +57,5 @@ habitat:
       enable_physics: True
   dataset:
     #data_path: data/datasets/floorplanner/rearrange/scratch/train/microtrain_small_size_v0.3.1.json.gz
-    data_path: data/datasets/floorplanner/rearrange/scratch/train/microtrain_eval_small_1scene_5objs_30epi_45degree.json.gz
+    #data_path: data/datasets/floorplanner/rearrange/scratch/train/microtrain_eval_small_1scene_5objs_30epi_45degree.json.gz
+    data_path: data/datasets/floorplanner/rearrange/scratch/train/microtrain_eval_large_1scene_2objs_30epi_45degree.json.gz
