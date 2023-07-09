@@ -34,7 +34,7 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
 
     def __init__(self, *args, task, **kwargs):
         config = kwargs["config"]
-        self.config= config
+        self.config = config
         self.motion_type = config.motion_control
         if self.motion_type == "base_velocity":
             BaseVelAction.__init__(self, *args, **kwargs)
@@ -165,14 +165,12 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
             self.humanoid_controller.obj_transform_base.translation
             + base_offset
         )
-        
+
         filtered_query_pos = self._sim.step_filter(
             prev_query_pos, target_query_pos
         )
         fixup = filtered_query_pos - target_query_pos
-        self.humanoid_controller.obj_transform_base.translation += (
-            fixup
-        )
+        self.humanoid_controller.obj_transform_base.translation += fixup
 
     def step(self, *args, is_last_action, **kwargs):
         self.skill_done = False
@@ -435,7 +433,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         return False
 
     def step(self, *args, is_last_action, **kwargs):
-        #panoptic_img = self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_0_articulated_agent_arm_panoptic"]
+        # panoptic_img = self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_0_articulated_agent_arm_panoptic"]
         self.skill_done = False
         nav_to_target_idx = kwargs[
             self._action_arg_prefix + "oracle_nav_with_backing_up_action"

@@ -785,6 +785,7 @@ class ContactTestStatsMeasurementConfig(MeasurementConfig):
     """
     type: str = "ContactTestStats"
 
+
 @dataclass
 class PanopticCalculatorConfig(MeasurementConfig):
     r"""
