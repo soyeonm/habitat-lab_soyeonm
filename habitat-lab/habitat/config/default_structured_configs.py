@@ -785,6 +785,14 @@ class ContactTestStatsMeasurementConfig(MeasurementConfig):
     """
     type: str = "ContactTestStats"
 
+@dataclass
+class PanopticCalculatorConfig(MeasurementConfig):
+    r"""
+    Composite rearrangement tasks only (rearrange, set_table, tidy_house). It uses a goal pddl expression to validate the success.
+
+    """
+    type: str = "PanopticCalculator"
+
 
 @dataclass
 class ObjectToGoalDistanceMeasurementConfig(MeasurementConfig):
@@ -2178,6 +2186,12 @@ cs.store(
     group="habitat/task/measurements",
     name="contact_test_stats",
     node=ContactTestStatsMeasurementConfig,
+)
+cs.store(
+    package="habitat.task.measurements.panoptic_calculator",
+    group="habitat/task/measurements",
+    name="panoptic_calculator",
+    node=PanopticCalculatorConfig,
 )
 cs.store(
     package="habitat.task.measurements.object_to_goal_distance",

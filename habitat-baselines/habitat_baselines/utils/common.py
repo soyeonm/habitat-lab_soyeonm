@@ -378,7 +378,6 @@ def poll_checkpoint_folder(
         return models_paths[ind]
     return None
 
-
 def generate_video(
     video_option: List[str],
     video_dir: Optional[str],

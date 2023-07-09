@@ -21,6 +21,7 @@ from habitat.tasks.rearrange.utils import (
     rearrange_logger,
 )
 from habitat.tasks.utils import cartesian_to_polar
+import cv2
 
 
 class MultiObjSensor(PointGoalSensor):
@@ -1140,3 +1141,125 @@ class ContactTestStats(Measure):
         )
         self._contact_flag.append(flag)
         self._metric = np.average(self._contact_flag)
+
+
+@registry.register_measure
+class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
+    """
+    Ratio of episodes the robot is able to find the person.
+    """
+
+    cls_uuid: str = "panoptic_calculator"
+
+    def __init__(self, sim, config, *args, **kwargs):
+        super().__init__(**kwargs)
+        self._sim = sim
+        self._config = config
+        self.ep_info = self._sim.get_agent_data(0).articulated_agent._sim.ep_info
+        for k, v in ep_info.info['object_labels'].items():
+            if v == 'any_targets|0':
+                self.any_target0_handle = k
+            elif v == 'any_targets|1':
+                self.any_target1_handle = k
+
+        self.any_target_ids_to_names = self.get_obj_id_2_handle()
+
+
+
+    def get_obj_id_2_handle(self):
+        id2handle_dict = {}
+        rom = self._sim.get_rigid_object_manager()
+        handles = rom.get_object_handles() 
+        for handle in handles:
+            if 'agent_0_oracle_nav_with_backing_up_action' in self.step_action_set: #This means it's floorplanner
+                any_target_handle = handle[:-6]#remove the '_:0000'
+
+                if any_target_handle in [self.any_target0_handle, self.any_target1_handle]:
+                    #In floorplanner, handles look like '004_sugar_box_:0000' or '0164a753999c91217e819b52f8f354b3f60ded96_:0000' (seems inconsistent)
+                    obj = rom.get_object_by_handle(handle)
+                    objid = obj.object_id + self._env._sim.habitat_config.object_ids_start
+                    id2handle_dict[objid] = any_target_handle
+            
+        return id2handle_dict
+
+    @staticmethod
+    def _get_uuid(*args, **kwargs):
+        return PanopticCalculator.cls_uuid
+
+    def reset_metric(self, *args, task, **kwargs):
+        self.step_count = 0
+        self.human_poses = []
+        self.update_metric(*args, task=task, **kwargs)
+
+    def found_human_list(
+        self, robot_poses, human_poses, min_dist=1.0, max_dist=2.0
+    ):
+        distances = [
+            np.linalg.norm(np.array((robot_poses[i] - human_poses[i]))[[0, 2]])
+            for i in range(len(robot_poses))
+        ]
+        return [d >= min_dist and d <= max_dist for d in distances]
+
+
+    def save_rgb(self, write_dir, rgb):
+        file_name = os.path.join(write_dir, str(self.step_count) + ".png")
+        cv2.imwrite(file_name, rgb)
+
+
+    def any_target_1_visible(self, panoptic):
+        #see if anytarget 1 is visible in the current frame
+        pass
+
+    def visualize_gt_seg(self):
+        pass
+
+
+    def visualize_detectron(self):
+        pass
+
+    def log(self):
+        pass
+
+
+    #Also save rgb here
+    def update_metric(self, *args, episode, task, observations, **kwargs):
+        panoptic = self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_0_articulated_agent_arm_panoptic"]
+        rgb = self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_0_articulated_agent_arm_rgb"]
+        #ep_info = self._sim.get_agent_data(0).articulated_agent._sim.ep_info
+
+        #movable_objs_to_be_rearranged = ep_info.info['object_labels']
+        #any_target0_handle = 
+        self.save_rgb(rgb)
+
+
+        #If agent held the object
+        #Just check that it roughly makes sense
+
+
+
+        breakpoint()
+        robot_pose = self._sim.get_agent_data(0).articulated_agent.base_pos
+        human_pose = self._sim.get_agent_data(1).articulated_agent.base_pos
+        self.robot_poses.append(np.array([robot_pose.x, robot_pose.y, robot_pose.z]))
+        self.human_poses.append(np.array([human_pose.x, human_pose.y, human_pose.z]))
+        robot_poses = self.robot_poses
+        human_poses = self.human_poses
+
+
+        self.step_count+=1
+
+        if len(human_poses) > 0 and len(robot_poses) > 0:
+            # TODO Why is len(robot_poses) != len(human_poses)?
+            if len(human_poses) != len(robot_poses):
+                print(
+                    f"{len(human_poses)} human poses != {len(robot_poses)} robot poses"
+                )
+            robot_poses = robot_poses[: len(human_poses)]
+            human_poses = human_poses[: len(robot_poses)]
+
+            found_human_list = self.found_human_list(robot_poses, human_poses)
+            found = sum(found_human_list) > 0
+            self._metric = float(found)
+
+        else:
+            self._metric = 0.0
