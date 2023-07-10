@@ -1200,6 +1200,7 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
         #save to pickle before updating
         if self.episode_idx >=0:
             pickle.dump(self.stats_dict, open(self.save_dir + '/stats_dict.p', 'wb'))
+            breakpoint()
 
         self.episode_idx +=1
         self.step_count = 0
@@ -1233,7 +1234,7 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
         elif self.state == 'middle' and not(agent_1_holding):
             self.state = 'end'
 
-    def set_before_middle_end(self, agent_0_holding):
+    def agent0_set_before_middle_end(self, agent_0_holding):
         # self.prev_human_holding = self.human_holding
         # self.human_holding = agent_1_holding
 
@@ -1371,9 +1372,12 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
         # ep_info = self._sim.get_agent_data(0).articulated_agent._sim.ep_info
 
         agent_1_holding = self._sim.get_agent_data(1).grasp_mgr.is_grasped #observations['agent_1_is_holding']
+        print("agent 1 holding", agent_1_holding)
         #print("step ",self.step_count, " agent 1 holding ", agent_1_holding)
         #print("snap idx ", self._sim.get_agent_data(1).grasp_mgr.snap_idx)
         self.set_before_middle_end(agent_1_holding) #state beginning, middle, end
+        agent_0_holding = self._sim.get_agent_data(0).grasp_mgr.is_grasped 
+        self.agent0_set_before_middle_end(agent_0_holding)
         #breakpoint()
 
         self.state_list.append(self.state)
