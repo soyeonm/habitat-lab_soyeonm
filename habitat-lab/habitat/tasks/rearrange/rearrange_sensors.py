@@ -1251,6 +1251,35 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
             os.makedirs(os.path.join(self.save_dir, 'rgb'))
         cv2.imwrite(file_name, cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB))
 
+        #if cur targ visible, save again 
+        if self.cur_human_visible:
+            file_name = os.path.join(self.save_dir, 'targ_viz', str(self.step_count) + ".png")
+            if not os.path.exists(os.path.join(self.save_dir, 'targ_viz')):
+                os.makedirs(os.path.join(self.save_dir, 'targ_viz'))
+            cv2.imwrite(file_name, cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB))
+
+        viz_mask = self.target_1_mask #bool
+        if np.sum(viz_mask) >0:
+            file_name = os.path.join(self.save_dir, 'targ_viz', str(self.step_count) + "_mask.png")
+            if not os.path.exists(os.path.join(self.save_dir, 'targ_viz')):
+                os.makedirs(os.path.join(self.save_dir, 'targ_viz'))
+            cv2.imwrite(file_name, viz_mask.astype(np.uint8)*255)
+
+        #if cur targ visible, save again 
+        if self.cur_human_visible:
+            file_name = os.path.join(self.save_dir, 'hum_viz', str(self.step_count) + ".png")
+            if not os.path.exists(os.path.join(self.save_dir, 'hum_viz')):
+                os.makedirs(os.path.join(self.save_dir, 'hum_viz'))
+            cv2.imwrite(file_name, cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB))
+
+        viz_mask = self.human_mask  #bool
+        if np.sum(viz_mask) >0:
+            file_name = os.path.join(self.save_dir, 'hum_viz', str(self.step_count) + "_mask.png")
+            if not os.path.exists(os.path.join(self.save_dir, 'hum_viz')):
+                os.makedirs(os.path.join(self.save_dir, 'hum_viz'))
+            cv2.imwrite(file_name, viz_mask.astype(np.uint8)*255)
+
+
     def save_rgb_human(self, rgb):
         file_name = os.path.join(self.save_dir, 'rgb_human', str(self.step_count) + ".png")
         if not os.path.exists(os.path.join(self.save_dir, 'rgb_human')):
@@ -1263,6 +1292,7 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
         self.target_1_mask = panoptic[:,:,0]==self.target_1_entry
         # if np.sum(self.target_1_mask) >0:
         #     print("Step ", self.step_count, ", target 1 visible!")
+        self.cur_targ_visible = np.sum(self.target_1_mask) >0
         return np.sum(self.target_1_mask) >0
 
     def human_visible_gt(self, panoptic):
@@ -1270,6 +1300,7 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
         self.human_mask = panoptic[:,:,0]==self.human_entry
         # if np.sum(self.human_mask) >0:
         #     print("Step ", self.step_count, ", human visible!")
+        self.cur_human_visible = np.sum(self.human_mask) >0
         return np.sum(self.human_mask) >0
 
     #Don't do fancy 
@@ -1376,7 +1407,9 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
                     'beginning_gt_target1_visible': beginning_gt_target1_visible,
                     'middle_gt_target1_visible': middle_gt_target1_visible,
                     'end_gt_target1_visible': end_gt_target1_visible,
-                    'valid_episod': self.state == 'end' and self.robot_state =='end'} #Make sure it ended with end
+                    'valid_episod': self.state == 'end' and self.robot_state =='end',
+                    'gt_human_visible_list':self.gt_human_visible_list,
+                    'gt_target_1_visible_list': self.gt_target_1_visible_list} #Make sure it ended with end
 
         #print("stats dict is ", stats_dict)
         self.save_rgb(rgb) 
