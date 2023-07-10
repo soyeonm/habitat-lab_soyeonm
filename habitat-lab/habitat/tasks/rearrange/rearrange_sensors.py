@@ -1200,7 +1200,7 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
         #save to pickle before updating
         if self.episode_idx >=0:
             pickle.dump(self.stats_dict, open(self.save_dir + '/stats_dict.p', 'wb'))
-            breakpoint()
+            #breakpoint()
 
         self.episode_idx +=1
         self.step_count = 0
