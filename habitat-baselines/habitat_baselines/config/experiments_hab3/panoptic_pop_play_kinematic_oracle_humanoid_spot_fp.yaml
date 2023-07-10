@@ -43,7 +43,7 @@ habitat:
     data_path: data/datasets/floorplanner/rearrange/scratch/train/sampled_20_largetrain_15s_15000epi_2obj.json.gz
   task:
     save_dir:
-      "../RE_panoptic_save_dir"
+      "../RERE_panoptic_save_dir"
     actions:
       agent_0_oracle_nav_with_backing_up_action:
         type: OracleNavWithBackingUpAction

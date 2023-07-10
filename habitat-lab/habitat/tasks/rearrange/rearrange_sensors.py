@@ -1191,7 +1191,7 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
                 if any_target_handle == self.any_target1_handle:
                     self.target_1_entry = objid
         #Add human
-        self.human_entry = 102
+        self.human_entry = 788
         id2handle_dict[self.human_entry] = "human"
 
         return id2handle_dict
