@@ -1372,7 +1372,7 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
         # ep_info = self._sim.get_agent_data(0).articulated_agent._sim.ep_info
 
         agent_1_holding = self._sim.get_agent_data(1).grasp_mgr.is_grasped #observations['agent_1_is_holding']
-        print("agent 1 holding", agent_1_holding)
+        #print("agent 1 holding", agent_1_holding)
         #print("step ",self.step_count, " agent 1 holding ", agent_1_holding)
         #print("snap idx ", self._sim.get_agent_data(1).grasp_mgr.snap_idx)
         self.set_before_middle_end(agent_1_holding) #state beginning, middle, end
