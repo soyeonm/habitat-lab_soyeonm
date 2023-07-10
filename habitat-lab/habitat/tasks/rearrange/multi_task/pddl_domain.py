@@ -91,7 +91,7 @@ class PddlDomain:
         self._parse_constants(domain_def)
         self._parse_predicates(domain_def)
         self._parse_actions(domain_def)
-        breakpoint()
+        #breakpoint()
 
     @property
     def actions(self) -> Dict[str, PddlAction]:
@@ -695,7 +695,7 @@ class PddlProblem(PddlDomain):
         """
         Sequence of actions to solve the task specified in the problem file.
         """
-        breakpoint()
+        #breakpoint()
 
         if self._solution is None:
             raise ValueError("Solution is not supported by this PDDL")

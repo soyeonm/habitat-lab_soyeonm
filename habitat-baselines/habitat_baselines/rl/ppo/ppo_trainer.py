@@ -1046,7 +1046,7 @@ class PPOTrainer(BaseRLTrainer):
                         )
                     frame = overlay_frame(frame, infos[i])
                     #breakpoint()
-                    print("infos[i]", infos[i])
+                    #print("infos[i]", infos[i])
                     rgb_frames[i].append(frame)
 
                 # episode ended

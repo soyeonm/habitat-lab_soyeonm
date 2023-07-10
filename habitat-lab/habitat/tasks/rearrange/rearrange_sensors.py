@@ -1208,6 +1208,7 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
         # self.prev_human_holding = False
 
         self.state = 'beginning'
+        self.robot_state = 'beginning'
 
         #beginning list
         self.state_list = []
@@ -1231,6 +1232,18 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
             self.state = 'middle'
         elif self.state == 'middle' and not(agent_1_holding):
             self.state = 'end'
+
+    def set_before_middle_end(self, agent_0_holding):
+        # self.prev_human_holding = self.human_holding
+        # self.human_holding = agent_1_holding
+
+        #if not(self.prev_human_holding) and not(self.human_holding):
+            #beginning
+
+        if self.robot_state == 'beginning' and agent_0_holding:
+            self.robot_state  = 'middle'
+        elif self.robot_state == 'middle' and not(agent_0_holding):
+            self.robot_state  = 'end'
 
     def save_rgb(self, rgb):
         file_name = os.path.join(self.save_dir, 'rgb', str(self.step_count) + ".png")
@@ -1327,8 +1340,8 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
         # ep_info = self._sim.get_agent_data(0).articulated_agent._sim.ep_info
 
         agent_1_holding = self._sim.get_agent_data(1).grasp_mgr.is_grasped #observations['agent_1_is_holding']
-        print("step ",self.step_count, " agent 1 holding ", agent_1_holding)
-        print("snap idx ", self._sim.get_agent_data(1).grasp_mgr.snap_idx)
+        #print("step ",self.step_count, " agent 1 holding ", agent_1_holding)
+        #print("snap idx ", self._sim.get_agent_data(1).grasp_mgr.snap_idx)
         self.set_before_middle_end(agent_1_holding) #state beginning, middle, end
         #breakpoint()
 
@@ -1362,15 +1375,18 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
                     'end_gt_human_visible': end_gt_human_visible,
                     'beginning_gt_target1_visible': beginning_gt_target1_visible,
                     'middle_gt_target1_visible': middle_gt_target1_visible,
-                    'end_gt_target1_visible': end_gt_target1_visible}
+                    'end_gt_target1_visible': end_gt_target1_visible,
+                    'valid_episod': self.state == 'end' and self.robot_state =='end'} #Make sure it ended with end
 
         #print("stats dict is ", stats_dict)
         self.save_rgb(rgb) 
         #breakpoint()
         self.save_rgb_human(self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_1_third_rgb"]) 
         self.visualize_gt_seg()
-
+        print("step ", self.step_count)
         self.step_count +=1
+        if self.step_count >= 1000:
+            task.should_end = True
         
         self.log()
         self._metric = 0

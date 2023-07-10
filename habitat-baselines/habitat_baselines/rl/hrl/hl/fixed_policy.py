@@ -104,7 +104,7 @@ class FixedHighLevelPolicy(HighLevelPolicy):
             if should_plan == 1.0:
                 use_idx = self._get_next_sol_idx(batch_idx, immediate_end)
 
-                skill_name, skill_args = self._solution_actions[use_idx]
+                skill_name, skill_args = self._solution_actions[use_idx]; print("skill name", skill_name); print("skii args", skill_args)
                 baselines_logger.info(
                     f"Got next element of the plan with {skill_name}, {skill_args}"
                 )
