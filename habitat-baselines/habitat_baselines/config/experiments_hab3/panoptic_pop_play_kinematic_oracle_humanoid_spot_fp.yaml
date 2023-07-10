@@ -40,7 +40,7 @@ hydra:
 
 habitat:
   dataset:
-    data_path: data/datasets/floorplanner/rearrange/scratch/train/sampled_50_largetrain_15s_15000epi_2obj.json.gz
+    data_path: data/datasets/floorplanner/rearrange/scratch/train/sampled_20_largetrain_15s_15000epi_2obj.json.gz
   task:
     save_dir:
       "../PICK_panoptic_save_dir"
