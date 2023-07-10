@@ -22,6 +22,8 @@ from habitat.tasks.rearrange.utils import (
     rearrange_logger,
 )
 from habitat.tasks.utils import cartesian_to_polar
+import os
+import pickle
 
 
 class MultiObjSensor(PointGoalSensor):
@@ -1151,124 +1153,224 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
 
     cls_uuid: str = "panoptic_calculator"
 
-    def __init__(self, sim, config, *args, **kwargs):
+    def __init__(self, sim, config, config_entire, *args, **kwargs):
+        #breakpoint()
         super().__init__(**kwargs)
         self._sim = sim
         self._config = config
-        self.ep_info = self._sim.get_agent_data(
-            0
-        ).articulated_agent._sim.ep_info
-        for k, v in ep_info.info["object_labels"].items():
-            if v == "any_targets|0":
-                self.any_target0_handle = k
-            elif v == "any_targets|1":
-                self.any_target1_handle = k
+        self.entire_config = config_entire
+        #self.save_dir = self.entire_config['save_dir']
+        self.episode_idx =-1
 
-        self.any_target_ids_to_names = self.get_obj_id_2_handle()
+    @staticmethod
+    def _get_uuid(*args, **kwargs):
+        return PanopticCalculator.cls_uuid
 
     def get_obj_id_2_handle(self):
         id2handle_dict = {}
         rom = self._sim.get_rigid_object_manager()
         handles = rom.get_object_handles()
         for handle in handles:
-            if (
-                "agent_0_oracle_nav_with_backing_up_action"
-                in self.step_action_set
-            ):  # This means it's floorplanner
-                any_target_handle = handle[:-6]  # remove the '_:0000'
-
-                if any_target_handle in [
-                    self.any_target0_handle,
-                    self.any_target1_handle,
-                ]:
-                    # In floorplanner, handles look like '004_sugar_box_:0000' or '0164a753999c91217e819b52f8f354b3f60ded96_:0000' (seems inconsistent)
-                    obj = rom.get_object_by_handle(handle)
-                    objid = (
-                        obj.object_id
-                        + self._env._sim.habitat_config.object_ids_start
-                    )
-                    id2handle_dict[objid] = any_target_handle
+            # if (
+            #     "agent_0_oracle_nav_with_backing_up_action"
+            #     in self.step_action_set
+            # ):  # This means it's floorplanner
+            # if True:
+            any_target_handle = handle  # remove the '_:0000'
+            if any_target_handle in [
+                self.any_target0_handle,
+                self.any_target1_handle,
+            ]:
+                # In floorplanner, handles look like '004_sugar_box_:0000' or '0164a753999c91217e819b52f8f354b3f60ded96_:0000' (seems inconsistent)
+                obj = rom.get_object_by_handle(handle)
+                objid = (
+                    obj.object_id
+                    + self._sim.habitat_config.object_ids_start
+                )
+                id2handle_dict[objid] = any_target_handle
+                if any_target_handle == self.any_target1_handle:
+                    self.target_1_entry = objid
+        #Add human
+        self.human_entry = 102
+        id2handle_dict[self.human_entry] = "human"
 
         return id2handle_dict
 
-    @staticmethod
-    def _get_uuid(*args, **kwargs):
-        return PanopticCalculator.cls_uuid
-
     def reset_metric(self, *args, task, **kwargs):
+        #save to pickle before updating
+        if self.episode_idx >=0:
+            pickle.dump(self.stats_dict, open(self.save_dir + '/stats_dict.p', 'wb'))
+
+        self.episode_idx +=1
         self.step_count = 0
         self.human_poses = []
+        # self.human_holding = False
+        # self.prev_human_holding = False
+
+        self.state = 'beginning'
+
+        #beginning list
+        self.state_list = []
+        self.gt_human_visible_list = []
+        self.gt_target_1_visible_list = []
+
+
+        #start log
+
         self.update_metric(*args, task=task, **kwargs)
 
-    def found_human_list(
-        self, robot_poses, human_poses, min_dist=1.0, max_dist=2.0
-    ):
-        distances = [
-            np.linalg.norm(np.array((robot_poses[i] - human_poses[i]))[[0, 2]])
-            for i in range(len(robot_poses))
-        ]
-        return [d >= min_dist and d <= max_dist for d in distances]
 
-    def save_rgb(self, write_dir, rgb):
-        file_name = os.path.join(write_dir, str(self.step_count) + ".png")
-        cv2.imwrite(file_name, rgb)
+    def set_before_middle_end(self, agent_1_holding):
+        # self.prev_human_holding = self.human_holding
+        # self.human_holding = agent_1_holding
 
-    def any_target_1_visible(self, panoptic):
+        #if not(self.prev_human_holding) and not(self.human_holding):
+            #beginning
+
+        if self.state == 'beginning' and agent_1_holding:
+            self.state = 'middle'
+        elif self.state == 'middle' and not(agent_1_holding):
+            self.state = 'end'
+
+    def save_rgb(self, rgb):
+        file_name = os.path.join(self.save_dir, 'rgb', str(self.step_count) + ".png")
+        if not os.path.exists(os.path.join(self.save_dir, 'rgb')):
+            os.makedirs(os.path.join(self.save_dir, 'rgb'))
+        cv2.imwrite(file_name, cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB))
+
+    def save_rgb_human(self, rgb):
+        file_name = os.path.join(self.save_dir, 'rgb_human', str(self.step_count) + ".png")
+        if not os.path.exists(os.path.join(self.save_dir, 'rgb_human')):
+            os.makedirs(os.path.join(self.save_dir, 'rgb_human'))
+        cv2.imwrite(file_name, cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB))
+
+    def any_target_1_visible_gt(self, panoptic):
         # see if anytarget 1 is visible in the current frame
-        pass
+        #any_target1_id = self.any_target_ids_to_names[self.any_target1_handle]
+        self.target_1_mask = panoptic[:,:,0]==self.target_1_entry
+        # if np.sum(self.target_1_mask) >0:
+        #     print("Step ", self.step_count, ", target 1 visible!")
+        return np.sum(self.target_1_mask) >0
 
+    def human_visible_gt(self, panoptic):
+        # see if anytarget 1 is visible in the current frame
+        self.human_mask = panoptic[:,:,0]==self.human_entry
+        # if np.sum(self.human_mask) >0:
+        #     print("Step ", self.step_count, ", human visible!")
+        return np.sum(self.human_mask) >0
+
+    #Don't do fancy 
     def visualize_gt_seg(self):
-        pass
+        viz_mask = self.human_mask + self.target_1_mask #bool
+        if np.sum(viz_mask) >0:
+            file_name = os.path.join(self.save_dir, 'viz_human_target_1', str(self.step_count) + ".png")
+            if not os.path.exists(os.path.join(self.save_dir, 'viz_human_target_1')):
+                os.makedirs(os.path.join(self.save_dir, 'viz_human_target_1'))
+            cv2.imwrite(file_name, viz_mask.astype(np.uint8)*255)
 
+    #Don't do fancy
     def visualize_detectron(self):
         pass
 
     def log(self):
-        pass
+        self.file = open(self.save_dir + '/log.txt', 'a')
+        self.file.write('step: ' + str(self.step_count) + "\n")
+        self.file.write("state: " + str(self.state)+ "\n")
+        if np.sum(self.target_1_mask) >0:
+            self.file.write("target 1 visible!"+ "\n")
+        if np.sum(self.human_mask) >0:
+            self.file.write("human visible!"+ "\n")
+        self.file.write(str(self.stats_dict) + "\n")
+        self.file.close()
+        
+    def _divide(self, a,b):
+        if b ==0:
+            return 0
+        else:
+            return a/b
+
+    def _get_stat(self, viz_obj, state):
+        assert state in ['beginning', 'middle', 'end']
+        if viz_obj == 'human':
+            list_of_interest = self.gt_human_visible_list
+        elif viz_obj == 'targ1':
+            list_of_interest = self.gt_target_1_visible_list
+        else:
+            raise Exception("Wrong")
+
+        stat = self._divide(np.sum((np.array(self.state_list) == state) * np.array(list_of_interest)), np.sum(np.array(self.state_list) == state))
+        return stat
+
 
     # Also save rgb here
     def update_metric(self, *args, episode, task, observations, **kwargs):
-        panoptic = self._sim._sensor_suite.get_observations(
-            self._sim.get_sensor_observations()
-        )["agent_0_articulated_agent_arm_panoptic"]
-        rgb = self._sim._sensor_suite.get_observations(
-            self._sim.get_sensor_observations()
-        )["agent_0_articulated_agent_arm_rgb"]
+        if self.step_count ==0:
+            self.ep_info = self._sim.get_agent_data(0).articulated_agent._sim.ep_info
+            for k, v in self.ep_info.info["object_labels"].items():
+                if v == "any_targets|0":
+                    self.any_target0_handle = k
+                elif v == "any_targets|1":
+                    self.any_target1_handle = k
+
+            self.any_target_ids_to_names = self.get_obj_id_2_handle()
+            self.episode_id = self.ep_info.episode_id
+            self.save_dir = os.path.join(self.entire_config['save_dir'], self.episode_id)
+
+            #Start a log
+            if not os.path.exists(self.save_dir):
+                os.makedirs(self.save_dir)
+            self.file = open(self.save_dir + '/log.txt', 'w')
+            self.file.close()
+
+        panoptic = self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_0_articulated_agent_arm_panoptic"]
+        rgb = self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_0_articulated_agent_arm_rgb"]
         # ep_info = self._sim.get_agent_data(0).articulated_agent._sim.ep_info
 
-        # movable_objs_to_be_rearranged = ep_info.info['object_labels']
-        # any_target0_handle =
-        self.save_rgb(rgb)
+        agent_1_holding = self._sim.get_agent_data(1).grasp_mgr.is_grasped #observations['agent_1_is_holding']
+        print("step ",self.step_count, " agent 1 holding ", agent_1_holding)
+        print("snap idx ", self._sim.get_agent_data(1).grasp_mgr.snap_idx)
+        self.set_before_middle_end(agent_1_holding) #state beginning, middle, end
+        #breakpoint()
 
-        # If agent held the object
-        # Just check that it roughly makes sense
+        self.state_list.append(self.state)
+        self.gt_human_visible_list.append(self.human_visible_gt(panoptic))
+        self.gt_target_1_visible_list.append(self.any_target_1_visible_gt(panoptic))
+        #breakpoint()
 
-        breakpoint()
-        robot_pose = self._sim.get_agent_data(0).articulated_agent.base_pos
-        human_pose = self._sim.get_agent_data(1).articulated_agent.base_pos
-        self.robot_poses.append(
-            np.array([robot_pose.x, robot_pose.y, robot_pose.z])
-        )
-        self.human_poses.append(
-            np.array([human_pose.x, human_pose.y, human_pose.z])
-        )
-        robot_poses = self.robot_poses
-        human_poses = self.human_poses
+        #Calculate stats
+        #Beginning stats
+        # beginning_gt_human_visible = self._divide(np.sum((np.array(self.state_list) == 'beginning') * np.array(self.gt_human_visible_list)), np.sum(np.array(self.state_list) == 'beginning'))
+        # middle_gt_human_visible = self._divide(np.sum(np.array(self.state_list) == 'middle' * np.array(self.gt_human_visible_list)), np.sum(np.array(self.state_list) == 'middle'))
+        # end_gt_human_visible = self._divide(np.sum(np.array(self.state_list == 'end') * np.array(self.gt_human_visible_list)), np.sum(np.array(self.state_list) == 'end'))
 
-        self.step_count += 1
+        # beginning_gt_target1_visible = self._divide(np.sum(np.array(self.state_list == 'beginning') * np.array(self.gt_target_1_visible_list)), np.sum(np.array(self.state_list) == 'beginning'))
+        # middle_gt_target1_visible = self._divide(np.sum(np.array(self.state_list == 'middle') * np.array(self.gt_target_1_visible_list)), np.sum(np.array(self.state_list) == 'middle'))
+        # end_gt_target1_visible = self._divide(np.sum(np.array(self.state_list == 'end') * np.array(self.gt_target_1_visible_list)), np.sum(np.array(self.state_list) == 'end'))
 
-        if len(human_poses) > 0 and len(robot_poses) > 0:
-            # TODO Why is len(robot_poses) != len(human_poses)?
-            if len(human_poses) != len(robot_poses):
-                print(
-                    f"{len(human_poses)} human poses != {len(robot_poses)} robot poses"
-                )
-            robot_poses = robot_poses[: len(human_poses)]
-            human_poses = human_poses[: len(robot_poses)]
+        beginning_gt_human_visible = self._get_stat('human', 'beginning')
+        middle_gt_human_visible = self._get_stat('human', 'middle') 
+        end_gt_human_visible = self._get_stat('human', 'end') 
 
-            found_human_list = self.found_human_list(robot_poses, human_poses)
-            found = sum(found_human_list) > 0
-            self._metric = float(found)
+        beginning_gt_target1_visible = self._get_stat('targ1', 'beginning') 
+        middle_gt_target1_visible = self._get_stat('targ1', 'middle') 
+        end_gt_target1_visible = self._get_stat('targ1', 'end') 
+        
 
-        else:
-            self._metric = 0.0
+        
+        self.stats_dict = {'beginning_gt_human_visible': beginning_gt_human_visible,
+                    'middle_gt_human_visible': middle_gt_human_visible,
+                    'end_gt_human_visible': end_gt_human_visible,
+                    'beginning_gt_target1_visible': beginning_gt_target1_visible,
+                    'middle_gt_target1_visible': middle_gt_target1_visible,
+                    'end_gt_target1_visible': end_gt_target1_visible}
+
+        #print("stats dict is ", stats_dict)
+        self.save_rgb(rgb) 
+        #breakpoint()
+        self.save_rgb_human(self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_1_third_rgb"]) 
+        self.visualize_gt_seg()
+
+        self.step_count +=1
+        
+        self.log()
+        self._metric = 0

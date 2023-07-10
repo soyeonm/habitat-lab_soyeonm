@@ -270,12 +270,21 @@ class EmbodiedTask:
             assert (
                 entity_type is not None
             ), f"invalid {entity_name} type {entity_cfg.type}"
-            entities[entity_name] = entity_type(
-                sim=self._sim,
-                config=entity_cfg,
-                dataset=self._dataset,
-                task=self,
-            )
+            if entity_name == 'panoptic_calculator':
+                entities[entity_name] = entity_type(
+                    sim=self._sim,
+                    config=entity_cfg,
+                    dataset=self._dataset,
+                    task=self,
+                    config_entire=self._config
+                )
+            else:
+                entities[entity_name] = entity_type(
+                    sim=self._sim,
+                    config=entity_cfg,
+                    dataset=self._dataset,
+                    task=self,
+                )
         return entities
 
     def reset(self, episode: Episode):

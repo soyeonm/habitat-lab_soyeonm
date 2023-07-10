@@ -18,6 +18,7 @@ class PddlApplyAction(ArticulatedAgentAction):
         super().__init__(*args, **kwargs)
         self._task = task
         self._was_prev_action_invalid = False
+        breakpoint()
 
     @property
     def entities(self):
@@ -56,6 +57,7 @@ class PddlApplyAction(ArticulatedAgentAction):
         return start_idx
 
     def _apply_action(self, apply_pddl_action):
+        breakpoint()
         cur_i = 0
         for action in self._action_ordering:
             action_part = apply_pddl_action[cur_i : cur_i + action.n_args][:]
@@ -86,6 +88,7 @@ class PddlApplyAction(ArticulatedAgentAction):
             cur_i += action.n_args
 
     def step(self, *args, is_last_action, **kwargs):
+        breakpoint()
         self._prev_action = None
         apply_pddl_action = kwargs[self._action_arg_prefix + "pddl_action"]
         self._was_prev_action_invalid = False

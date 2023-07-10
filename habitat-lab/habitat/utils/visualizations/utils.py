@@ -217,7 +217,8 @@ def observations_to_image(observation: Dict, info: Dict) -> np.ndarray:
     """
     render_obs_images: List[np.ndarray] = []
     for sensor_name in observation:
-        if len(observation[sensor_name].shape) > 1:
+        if len(observation[sensor_name].shape) > 1 and sensor_name in set(['agent_0_third_rgb', 'agent_1_third_rgb', 'agent_0_articulated_agent_arm_rgb']): #sensor_name 'agent_0_articulated_agent_arm_panoptic':
+            #print(sensor_name)
             obs_k = observation[sensor_name]
             if not isinstance(obs_k, np.ndarray):
                 obs_k = obs_k.cpu().numpy()
@@ -351,7 +352,6 @@ def overlay_frame(frame, info, additional=None):
     """
     Renders text from the `info` dictionary to the `frame` image.
     """
-
     lines = []
     flattened_info = flatten_dict(info)
     for k, v in flattened_info.items():

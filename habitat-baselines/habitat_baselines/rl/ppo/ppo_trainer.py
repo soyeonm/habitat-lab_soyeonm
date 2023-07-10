@@ -865,6 +865,7 @@ class PPOTrainer(BaseRLTrainer):
 
         self._init_envs(config, is_eval=True)
 
+
         self._agent = self._create_agent(None)
         action_shape, discrete_actions = get_action_space_info(
             self._agent.policy_action_space
@@ -877,6 +878,7 @@ class PPOTrainer(BaseRLTrainer):
             self._agent.load_state_dict(ckpt_dict)
 
         observations = self.envs.reset()
+        #breakpoint()
         batch = batch_obs(observations, device=self.device)
         batch = apply_obs_transforms_batch(batch, self.obs_transforms)  # type: ignore
 
@@ -1031,8 +1033,6 @@ class PPOTrainer(BaseRLTrainer):
                 ):
                     envs_to_pause.append(i)
 
-                breakpoint()
-
                 if len(self.config.habitat_baselines.eval.video_option) > 0:
                     # TODO move normalization / channel changing out of the policy and undo it here
                     frame = observations_to_image(
@@ -1045,6 +1045,8 @@ class PPOTrainer(BaseRLTrainer):
                             {k: v[i] * 0.0 for k, v in batch.items()}, infos[i]
                         )
                     frame = overlay_frame(frame, infos[i])
+                    #breakpoint()
+                    print("infos[i]", infos[i])
                     rgb_frames[i].append(frame)
 
                 # episode ended

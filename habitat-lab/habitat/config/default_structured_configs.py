@@ -1264,6 +1264,8 @@ class TaskConfig(HabitatBaseConfig):
     art_succ_thresh: float = 0.15
     robot_at_thresh: float = 2.0
     actions: Dict[str, ActionConfig] = MISSING
+    #Made by me
+    save_dir: str = ""
 
 
 @dataclass
@@ -1653,6 +1655,7 @@ class HabitatConfig(HabitatBaseConfig):
     task: TaskConfig = MISSING
     dataset: DatasetConfig = MISSING
     gym: GymConfig = GymConfig()
+
 
 
 # -----------------------------------------------------------------------------
