@@ -157,29 +157,67 @@ class RearrangeTask(NavigationTask):
             )
 
     def _set_articulated_agent_start(self, agent_idx: int) -> None:
-        articulated_agent_start = self._get_cached_articulated_agent_start(
-            agent_idx
+        # #breakpoint()
+        # targ_object_loc = self._sim.scene_pos[agent_idx] 
+        # #hum_object_loc = self._sim.scene_pos[1]
+
+        # #sample until within 5 meters for each agent
+
+        #Just fix navmesh error first
+
+        #Get rot
+        (_,articulated_agent_rot,) = self._sim.set_articulated_agent_base_to_random_point(agent_idx=agent_idx)
+
+        #Copied from https://github.com/soyeonm/habitat-lab_soyeonm/blob/my_changes_SIRo_socnav_latest/habitat-lab/habitat/tasks/rearrange/actions/oracle_nav_action.py
+        navigable_point = self._sim.pathfinder.get_random_navigable_point()
+        _navmesh_vertices = np.stack(
+            self._sim.pathfinder.build_navmesh_vertices(), axis=0
         )
-        if articulated_agent_start is None:
-            (
-                articulated_agent_pos,
-                articulated_agent_rot,
-            ) = self._sim.set_articulated_agent_base_to_random_point(
-                agent_idx=agent_idx
+        _island_sizes = [
+            self._sim.pathfinder.island_radius(p) for p in _navmesh_vertices
+        ]
+        _max_island_size = max(_island_sizes)
+        largest_size_vertex = _navmesh_vertices[
+            np.argmax(_island_sizes)
+        ]
+        _largest_island_idx = self._sim.pathfinder.get_island(
+            largest_size_vertex
+        )
+
+        start_pos = self._sim.pathfinder.get_random_navigable_point(
+                island_index=_largest_island_idx
             )
-            self._cache_articulated_agent_start(
-                (articulated_agent_pos, articulated_agent_rot), agent_idx
-            )
-        else:
-            (
-                articulated_agent_pos,
-                articulated_agent_rot,
-            ) = articulated_agent_start
-        articulated_agent = self._sim.get_agent_data(
-            agent_idx
-        ).articulated_agent
-        articulated_agent.base_pos = articulated_agent_pos
+        #self.cur_articulated_agent.sim_obj.translation = start_pos
+
+        articulated_agent = self._sim.get_agent_data(agent_idx).articulated_agent
+        articulated_agent.base_pos = start_pos #articulated_agent_pos
         articulated_agent.base_rot = articulated_agent_rot
+
+    # def _set_articulated_agent_start(self, agent_idx: int) -> None:
+    #     #oriiginal
+    #     articulated_agent_start = self._get_cached_articulated_agent_start(
+    #         agent_idx
+    #     )
+    #     if articulated_agent_start is None:
+    #         (
+    #             articulated_agent_pos,
+    #             articulated_agent_rot,
+    #         ) = self._sim.set_articulated_agent_base_to_random_point(
+    #             agent_idx=agent_idx
+    #         )
+    #         self._cache_articulated_agent_start(
+    #             (articulated_agent_pos, articulated_agent_rot), agent_idx
+    #         )
+    #     else:
+    #         (
+    #             articulated_agent_pos,
+    #             articulated_agent_rot,
+    #         ) = articulated_agent_start
+    #     articulated_agent = self._sim.get_agent_data(
+    #         agent_idx
+    #     ).articulated_agent
+    #     articulated_agent.base_pos = articulated_agent_pos
+    #     articulated_agent.base_rot = articulated_agent_rot
 
     def reset(self, episode: Episode, fetch_observations: bool = True):
         self._episode_id = episode.episode_id
