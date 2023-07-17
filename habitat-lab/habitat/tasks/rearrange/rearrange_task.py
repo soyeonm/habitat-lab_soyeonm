@@ -165,6 +165,7 @@ class RearrangeTask(NavigationTask):
 
         #Just fix navmesh error first
 
+
         #Get rot
         (_,articulated_agent_rot,) = self._sim.set_articulated_agent_base_to_random_point(agent_idx=agent_idx)
 
@@ -185,6 +186,18 @@ class RearrangeTask(NavigationTask):
         )
 
         start_pos = self._sim.pathfinder.get_random_navigable_point(
+                island_index=_largest_island_idx
+            )
+        #If human, start within 2 meters
+        if agent_idx == 1:
+            while np.linalg.norm((start_pos - self._sim.get_scene_pos()[1])[[0, 2]]) >=2.5:
+                start_pos = self._sim.pathfinder.get_random_navigable_point(
+                island_index=_largest_island_idx
+            )
+
+        elif agent_idx == 0:
+            while not(np.linalg.norm((start_pos - self._sim.get_scene_pos()[0])[[0, 2]]) <=6 and np.linalg.norm((start_pos - self._sim.get_scene_pos()[0])[[0, 2]])>=3):
+                start_pos = self._sim.pathfinder.get_random_navigable_point(
                 island_index=_largest_island_idx
             )
         #self.cur_articulated_agent.sim_obj.translation = start_pos

@@ -1266,6 +1266,9 @@ class TaskConfig(HabitatBaseConfig):
     actions: Dict[str, ActionConfig] = MISSING
     #Made by me
     save_dir: str = ""
+    place_human_visible: bool = False
+    place_spot_visible: bool = False
+
 
 
 @dataclass

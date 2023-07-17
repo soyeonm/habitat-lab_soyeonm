@@ -32,6 +32,7 @@ defaults:
   - override /habitat/task/rearrange: multi_agent_tidy_house_base_spot
   # For Spot observation space
   - override /habitat/simulator/agents@habitat.simulator.agents.agent_0: rgbd_head_rgbdp_arm_agent
+  - override /habitat/simulator/agents@habitat.simulator.agents.agent_1: rgbdp_head_agent
   - _self_
 
 hydra:
@@ -87,6 +88,7 @@ habitat:
       - agent_0_has_finished_oracle_nav
       - agent_0_other_agent_gps
       - agent_1_head_depth
+      - agent_1_head_panoptic
       - agent_1_relative_resting_position
       - agent_1_obj_start_sensor
       - agent_1_obj_goal_sensor

@@ -259,6 +259,8 @@ class EmbodiedTask:
         self._action_keys = list(self.actions.keys())
 
         self._is_episode_active = False
+        #self.step_count =0
+        #breakpoint()
 
     def _init_entities(self, entities_configs, register_func) -> OrderedDict:
         entities = OrderedDict()
@@ -299,6 +301,8 @@ class EmbodiedTask:
             action_instance.reset(episode=episode, task=self)
 
         self._is_episode_active = True
+        self.step_count =0
+        #breakpoint()
 
         return observations
 
@@ -324,7 +328,156 @@ class EmbodiedTask:
             )
         )
 
+    #Just added for my purpsoe
+    def any_target_1_visible_gt(self, panoptic):
+        # see if anytarget 1 is visible in the current frame
+        #any_target1_id = self.any_target_ids_to_names[self.any_target1_handle]
+        self.target_1_mask = panoptic[:,:,0]==self.target_1_entry
+        # if np.sum(self.target_1_mask) >0:
+        #     print("Step ", self.step_count, ", target 1 visible!")
+        self.cur_targ_visible = np.sum(self.target_1_mask) >0
+        return np.sum(self.target_1_mask) >0
+
+    def human_visible_gt(self, panoptic):
+        # see if anytarget 1 is visible in the current frame
+        self.human_mask = panoptic[:,:,0]==self.human_entry
+        # if np.sum(self.human_mask) >0:
+        #     print("Step ", self.step_count, ", human visible!")
+        self.cur_human_visible = np.sum(self.human_mask) >0
+        return np.sum(self.human_mask) >0
+
+    def get_obj_id_2_handle(self):
+        id2handle_dict = {}
+        rom = self._sim.get_rigid_object_manager()
+        handles = rom.get_object_handles()
+        for handle in handles:
+            # if (
+            #     "agent_0_oracle_nav_with_backing_up_action"
+            #     in self.step_action_set
+            # ):  # This means it's floorplanner
+            # if True:
+            any_target_handle = handle  # remove the '_:0000'
+            if any_target_handle in [
+                #self.any_target0_handle,
+                self.any_target1_handle,
+            ]:
+                # In floorplanner, handles look like '004_sugar_box_:0000' or '0164a753999c91217e819b52f8f354b3f60ded96_:0000' (seems inconsistent)
+                obj = rom.get_object_by_handle(handle)
+                objid = (
+                    obj.object_id
+                    + self._sim.habitat_config.object_ids_start
+                )
+                id2handle_dict[objid] = any_target_handle
+                if any_target_handle == self.any_target1_handle:
+                    self.target_1_entry = objid
+        #Add human
+        #self.human_entry = 788
+        #id2handle_dict[self.human_entry] = "human"
+
+        #return id2handle_dict
+
+    def place_agent(self, agent_idx):
+        (_,articulated_agent_rot,) = self._sim.set_articulated_agent_base_to_random_point(agent_idx=agent_idx)
+
+        #Copied from https://github.com/soyeonm/habitat-lab_soyeonm/blob/my_changes_SIRo_socnav_latest/habitat-lab/habitat/tasks/rearrange/actions/oracle_nav_action.py
+        navigable_point = self._sim.pathfinder.get_random_navigable_point()
+        _navmesh_vertices = np.stack(
+            self._sim.pathfinder.build_navmesh_vertices(), axis=0
+        )
+        _island_sizes = [
+            self._sim.pathfinder.island_radius(p) for p in _navmesh_vertices
+        ]
+        _max_island_size = max(_island_sizes)
+        largest_size_vertex = _navmesh_vertices[
+            np.argmax(_island_sizes)
+        ]
+        _largest_island_idx = self._sim.pathfinder.get_island(
+            largest_size_vertex
+        )
+
+        start_pos = self._sim.pathfinder.get_random_navigable_point(
+                island_index=_largest_island_idx
+            )
+        articulated_agent = self._sim.get_agent_data(agent_idx).articulated_agent
+        articulated_agent.base_pos = start_pos #articulated_agent_pos
+        articulated_agent.base_rot = articulated_agent_rot
+        self._sim.maybe_update_articulated_agent()
+
     def step(self, action: Dict[str, Any], episode: Episode):
+        #Just comment out for now
+        #teleport here
+        #breakpoint()
+        
+        if self._cur_episode_step ==0:
+            self.agent_1_placement_success = None; self.agent_0_placement_success = None
+            self.ep_info = self._sim.get_agent_data(0).articulated_agent._sim.ep_info
+            for k, v in self.ep_info.info["object_labels"].items():
+                if v == "any_targets|1":
+                    self.any_target1_handle = k
+            self.human_entry = 788
+            self.get_obj_id_2_handle()
+
+            if self._config.place_human_visible:
+                self.agent_1_placement_success = True
+                #Do human first
+                agent_idx = 1
+                self.place_agent(agent_idx)
+                panoptic = self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_1_head_panoptic"]
+
+                sample_times = 0
+                while not(self.any_target_1_visible_gt(panoptic)) and sample_times <100:
+                    (start_pos,articulated_agent_rot,) = self._sim.set_articulated_agent_base_to_random_point(agent_idx=agent_idx)
+                    # start_pos = self._sim.pathfinder.get_random_navigable_point(
+                    # island_index=_largest_island_idx)
+                    articulated_agent = self._sim.get_agent_data(agent_idx).articulated_agent
+                    articulated_agent.base_pos = start_pos #articulated_agent_pos
+                    articulated_agent.base_rot = articulated_agent_rot
+                    self._sim.maybe_update_articulated_agent()
+                    panoptic = self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_1_head_panoptic"]
+                    #print("sampling a new pose!")
+                    sample_times +=1
+                if sample_times == 100:
+                    while np.linalg.norm((start_pos - self._sim.get_scene_pos()[1])[[0, 2]]) >=2.5:
+                        start_pos = self._sim.pathfinder.get_random_navigable_point(
+                        island_index=_largest_island_idx
+                            )
+                        articulated_agent = self._sim.get_agent_data(agent_idx).articulated_agent
+                        articulated_agent.base_pos = start_pos #articulated_agent_pos
+                        articulated_agent.base_rot = articulated_agent_rot
+                    self.agent_1_placement_success = False
+
+
+            if self._config.place_spot_visible:
+                self.agent_0_placement_success = True
+                #Now spot
+                agent_idx = 0
+                #teleport agent 0 
+                self.place_agent(agent_idx)
+                
+                #Make sure that the agent 0 sees the human and the target 1
+                panoptic = self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_0_articulated_agent_arm_panoptic"]
+
+                sample_times = 0
+                while not(self.human_visible_gt(panoptic) and self.any_target_1_visible_gt(panoptic)) and sample_times <100:
+                    (start_pos,articulated_agent_rot,) = self._sim.set_articulated_agent_base_to_random_point(agent_idx=agent_idx)
+                    # start_pos = self._sim.pathfinder.get_random_navigable_point(
+                    # island_index=_largest_island_idx)
+                    articulated_agent = self._sim.get_agent_data(agent_idx).articulated_agent
+                    articulated_agent.base_pos = start_pos #articulated_agent_pos
+                    articulated_agent.base_rot = articulated_agent_rot
+                    self._sim.maybe_update_articulated_agent()
+                    panoptic = self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_0_articulated_agent_arm_panoptic"]
+                    #print("sampling a new pose!")
+                    sample_times +=1
+                    #breakpoint()
+            
+                if sample_times == 100:
+                    self.agent_0_placement_success = False
+                #self.cur_articulated_agent.sim_obj.translation = start_pos
+
+        #self.step_count +=1
+
+
         action_name = action["action"]
         if "action_args" not in action or action["action_args"] is None:
             action["action_args"] = {}
