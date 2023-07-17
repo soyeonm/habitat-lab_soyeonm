@@ -402,6 +402,7 @@ class EmbodiedTask:
         articulated_agent.base_pos = start_pos #articulated_agent_pos
         articulated_agent.base_rot = articulated_agent_rot
         self._sim.maybe_update_articulated_agent()
+        return _largest_island_idx
 
     def step(self, action: Dict[str, Any], episode: Episode):
         #Just comment out for now
@@ -421,7 +422,7 @@ class EmbodiedTask:
                 self.agent_1_placement_success = True
                 #Do human first
                 agent_idx = 1
-                self.place_agent(agent_idx)
+                _largest_island_idx = self.place_agent(agent_idx)
                 panoptic = self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_1_head_panoptic"]
 
                 sample_times = 0
