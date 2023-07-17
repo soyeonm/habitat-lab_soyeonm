@@ -1480,7 +1480,7 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
             #Detectron 2ambiguous, 2a
             det_2a = 0.0
             if detectron_2b ==0:
-                det_2ambiguous = elf._get_stat_from_list_of_interest(self.detectron_human_visible_list, 'middle')
+                det_2ambiguous = self._get_stat_from_list_of_interest(self.detectron_human_visible_list, 'middle')
                 if det_2ambiguous:
                     det_2a = 1.0
             else:
