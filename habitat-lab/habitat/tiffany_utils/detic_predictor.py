@@ -85,9 +85,9 @@ class VisualizationDemo(object):
 
         self.parallel = parallel
         #breakpoint()
-        cfg.defrost()
-        cfg.MODEL.DEVICE = "cpu"
-        cfg.freeze()
+        #cfg.defrost()
+        #cfg.MODEL.DEVICE = "cpu"
+        #cfg.freeze()
         if parallel:
             num_gpu = torch.cuda.device_count()
             self.predictor = AsyncPredictor(cfg, num_gpus=num_gpu)
