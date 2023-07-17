@@ -20,6 +20,10 @@ from habitat_baselines.config.default_structured_configs import (
 if TYPE_CHECKING:
     from omegaconf import DictConfig
 
+import os
+Detic_directory = os.environ["Detic_directory"]
+sys.path.insert(0, Detic_directory)
+
 
 @hydra.main(
     version_base=None,
