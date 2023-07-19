@@ -1173,8 +1173,14 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
         # else:
         #     raise Exception("Not implemented!")
         #Initialize detic
-        cfg = setup_cfg()
-        self.detic_predictor = VisualizationDemo(cfg, detic_args)
+        ############################################################################################################
+        #cfg = setup_cfg()
+        #self.detic_predictor = VisualizationDemo(cfg, detic_args)
+        ############################################################################################################
+
+        self.handle_2_category = pickle.load(open('ycb_ba_g_handle_2_category.p', 'rb'))
+        self.all_categories = pickle.load(open('ycb_ba_g_all_categories.p', 'rb'))
+        self.floorplanner_dict = pickle.load(open('FP_mc_from_csv.p', 'rb'))
 
     @staticmethod
     def _get_uuid(*args, **kwargs):
@@ -1182,6 +1188,7 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
 
     def get_obj_id_2_handle(self):
         id2handle_dict = {}
+        # self.total_cats = {}
         rom = self._sim.get_rigid_object_manager()
         handles = rom.get_object_handles()
         for handle in handles:
@@ -1190,6 +1197,13 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
             #     in self.step_action_set
             # ):  # This means it's floorplanner
             # if True:
+            # obj = rom.get_object_by_handle(handle)
+            # objid = (
+            #     obj.object_id
+            #     + self._sim.habitat_config.object_ids_start
+            # )
+            # self.total_cats[objid] = 1
+
             any_target_handle = handle  # remove the '_:0000'
             if any_target_handle in [
                 self.any_target0_handle,
@@ -1238,7 +1252,7 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
 
 
         #start log
-
+        self.logged_obj1_sem_cat = True 
         self.update_metric(*args, task=task, **kwargs)
 
 
@@ -1408,6 +1422,16 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
             self.episode_id = self.ep_info.episode_id
             self.save_dir = os.path.join(self.entire_config['save_dir'], self.episode_id)
 
+            #Get the category of any target 1 handle 
+            #ycb 
+            if self.any_target1_handle.split('_:')[0] in self.handle_2_category:
+                self.any_target1_semantic_category = self.handle_2_category[self.any_target1_handle.split('_:')[0]]
+            elif self.self.any_target1_handle.split('_:')[0] in self.floorplanner_dict:
+                self.any_target1_semantic_category = self.floorplanner_dict[self.any_target1_handle.split('_:')[0]]['main_category']
+            else:
+                self.any_target1_semantic_category = self.any_target1_handle.split('_:')[0].split('_')[1]
+                self.logged_obj1_sem_cat = False
+
             #Start a log
             if not os.path.exists(self.save_dir):
                 os.makedirs(self.save_dir)
@@ -1418,7 +1442,9 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
         rgb = self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_0_articulated_agent_arm_rgb"]
 
         #Run detectron 
-        predictions, visualized_output = self.detic_predictor.run_on_image(image=cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR), classes_to_keep=None)
+        ############################################################################################################
+        # predictions, visualized_output = self.detic_predictor.run_on_image(image=cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR), classes_to_keep=None)
+        ############################################################################################################
         # ep_info = self._sim.get_agent_data(0).articulated_agent._sim.ep_info
 
         agent_1_holding = self._sim.get_agent_data(1).grasp_mgr.is_grasped #observations['agent_1_is_holding']
@@ -1434,8 +1460,10 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
         self.gt_human_visible_list.append(self.human_visible_gt(panoptic))
         self.gt_target_1_visible_list.append(self.any_target_1_visible_gt(panoptic))
         #breakpoint()
-        self.detectron_human_visible_list.append(self.human_visible_detectron(predictions))
-        self.detectron_target_1_visible_list.append(self.any_target_1_visible_detectron(predictions))
+        ############################################################################################################
+        #self.detectron_human_visible_list.append(self.human_visible_detectron(predictions))
+        #self.detectron_target_1_visible_list.append(self.any_target_1_visible_detectron(predictions))
+        ############################################################################################################
 
 
         #Calculate stats
@@ -1456,16 +1484,18 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
         middle_gt_target1_visible = self._get_stat('targ1', 'middle') 
         end_gt_target1_visible = self._get_stat('targ1', 'end') 
 
-        beginning_detectron2_target1_visible = self._get_stat_from_list_of_interest(self.detectron_target_1_visible_list, 'beginning') 
-        
+        ############################################################################################################
+        #beginning_detectron2_target1_visible = self._get_stat_from_list_of_interest(self.detectron_target_1_visible_list, 'beginning') 
+        ############################################################################################################
 
+        ############################################################################################################
         #Let's get new stats
         #Falls into 2b, 2a, 2 ambiguous
         gt_2a = 0.0; gt_2b = 0.0; gt_2ambiguous = 0.0
-        det_2a = 0.0; detectron_2b=0.0; det_2ambiguous=0.0
+        # det_2a = 0.0; detectron_2b=0.0; det_2ambiguous=0.0
         if beginning_gt_target1_visible>0 :
             #2b: saw the human in the state of grabbing the object
-            detectron_2b = self._get_stat_from_list_of_interest(self.detectron_target_1_visible_list, 'middle')
+            #detectron_2b = self._get_stat_from_list_of_interest(self.detectron_target_1_visible_list, 'middle')
             gt_2b = self._get_stat('targ1', 'middle')
 
             #GT 2ambiguous, 2a
@@ -1478,28 +1508,28 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
                 gt_2ambiguous = 0.0
 
             #Detectron 2ambiguous, 2a
-            det_2a = 0.0
-            if detectron_2b ==0:
-                det_2ambiguous = self._get_stat_from_list_of_interest(self.detectron_human_visible_list, 'middle')
-                if det_2ambiguous:
-                    det_2a = 1.0
-            else:
-                det_2ambiguous = 0.0
+            # det_2a = 0.0
+            # if detectron_2b ==0:
+            #     det_2ambiguous = self._get_stat_from_list_of_interest(self.detectron_human_visible_list, 'middle')
+            #     if det_2ambiguous:
+            #         det_2a = 1.0
+            # else:
+            #     det_2ambiguous = 0.0
 
 
-        #Get the same for detectron2
-        beg_det_det_2a=0.0; beg_det_det_2b=0.0; beg_det_det_2ambiguous=0.0
-        if beginning_detectron2_target1_visible>0:
-            beg_det_det_2b = self._get_stat_from_list_of_interest(self.detectron_target_1_visible_list, 'middle')
+        # #Get the same for detectron2
+        # beg_det_det_2a=0.0; beg_det_det_2b=0.0; beg_det_det_2ambiguous=0.0
+        # if beginning_detectron2_target1_visible>0:
+        #     beg_det_det_2b = self._get_stat_from_list_of_interest(self.detectron_target_1_visible_list, 'middle')
 
-            beg_det_det_2a = 0.0
-            if beg_det_det_2b ==0:
-                beg_det_det_2ambiguous = self._get_stat_from_list_of_interest(self.detectron_human_visible_list, 'middle')
-                if beg_det_det_2ambiguous:
-                    beg_det_det_2a = 1.0
-            else:
-                beg_det_det_2ambiguous = 0.0
-
+        #     beg_det_det_2a = 0.0
+        #     if beg_det_det_2b ==0:
+        #         beg_det_det_2ambiguous = self._get_stat_from_list_of_interest(self.detectron_human_visible_list, 'middle')
+        #         if beg_det_det_2ambiguous:
+        #             beg_det_det_2a = 1.0
+        #     else:
+        #         beg_det_det_2ambiguous = 0.0
+        ############################################################################################################
 
         
         self.stats_dict = {'beginning_gt_human_visible': beginning_gt_human_visible,
@@ -1515,23 +1545,27 @@ class PanopticCalculator(UsesArticulatedAgentInterface, Measure):
                         {'gt': {
                             '2a': gt_2a,
                             '2b':gt_2b,
-                            '2amb': gt_2ambiguous},
-                        'det': {
-                        '2a': det_2a,
-                        '2b': detectron_2b,
-                        '2amb': det_2ambiguous
-                        }},
-                    'beggining_det_targ1_visible_2a_2b_2ambiguous':
-                        {'det': {
-                        '2a': beg_det_det_2a,
-                        '2b': beg_det_det_2b,
-                        '2amb': beg_det_det_2ambiguous
-                        }}
+                            '2amb': gt_2ambiguous}},
+                    #     'det': {
+                    #     '2a': det_2a,
+                    #     '2b': detectron_2b,
+                    #     '2amb': det_2ambiguous
+                    #     }},
+                    # 'beggining_det_targ1_visible_2a_2b_2ambiguous':
+                    #     {'det': {
+                    #     '2a': beg_det_det_2a,
+                    #     '2b': beg_det_det_2b,
+                    #     '2amb': beg_det_det_2ambiguous
+                    #     }}
+                    'any_target1_semantic_category':self.any_target1_semantic_category, 
+                    'logged_obj1_sem_cat': self.logged_obj1_sem_cat, 
                     } #Make sure it ended with end
 
         #print("stats dict is ", stats_dict)
         self.save_rgb(rgb) 
-        self._save_detectron_outputs(visualized_output)
+        ############################################################################################################
+        #self._save_detectron_outputs(visualized_output)
+        ############################################################################################################
         #breakpoint()
         self.save_rgb_human(self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_1_third_rgb"]) 
         self.visualize_gt_seg()

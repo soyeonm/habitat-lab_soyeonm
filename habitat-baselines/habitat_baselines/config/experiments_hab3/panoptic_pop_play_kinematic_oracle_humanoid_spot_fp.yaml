@@ -41,7 +41,7 @@ hydra:
 
 habitat:
   dataset:
-    data_path: data/datasets/floorplanner/rearrange/scratch/train/jul14_same_recep_100_episodes.json.gz #start_same_recep.json.gz #sampled_20_largetrain_15s_15000epi_2obj.json.gz
+    data_path: data/datasets/floorplanner/rearrange/scratch/train/jul19_same_recep_100_episodes.json.gz #sampled_20_largetrain_15s_15000epi_2obj.json.gz #jul14_same_recep_100_episodes.json.gz #start_same_recep.json.gz #sampled_20_largetrain_15s_15000epi_2obj.json.gz
   task:
     save_dir:
       "../RERE_panoptic_save_dir"
