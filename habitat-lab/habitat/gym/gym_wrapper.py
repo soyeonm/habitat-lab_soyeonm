@@ -309,7 +309,8 @@ class HabGymWrapper(gym.Wrapper):
         if return_info:
             obs, info = obs
             self._last_obs = obs
-            return self._transform_obs(obs), info
+            #return self._transform_obs(obs), info
+            return obs, info
         else:
             self._last_obs = obs
             return self._transform_obs(obs)
