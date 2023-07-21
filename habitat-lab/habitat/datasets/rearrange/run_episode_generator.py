@@ -7,14 +7,14 @@
 import ctypes
 import sys
 
-try:
-    sys.path.remove("/Users/jimmytyyang/Habitat/habitat-lab")
-except Exception:
-    print("not in sys.path")
-sys.path.append("/Users/jimmytyyang/habitat_lab_0301/habitat-lab/habitat-lab")
-sys.path.append(
-    "/Users/jimmytyyang/habitat_lab_0301/habitat-lab/habitat-baselines"
-)
+# try:
+#     sys.path.remove("/Users/jimmytyyang/Habitat/habitat-lab")
+# except Exception:
+#     print("not in sys.path")
+# sys.path.append("/Users/jimmytyyang/habitat_lab_0301/habitat-lab/habitat-lab")
+# sys.path.append(
+#     "/Users/jimmytyyang/habitat_lab_0301/habitat-lab/habitat-baselines"
+# )
 import os
 
 os.environ["MAGNUM_LOG"] = "quiet"
@@ -331,7 +331,7 @@ def get_arg_parser():
         help="Run the episode generator and serialize the results.",
     )
 
-    # optional arguments
+    # # optional arguments
     parser.add_argument(
         "--debug",
         action="store_true",
@@ -367,6 +367,9 @@ def get_arg_parser():
 if __name__ == "__main__":
     parser = get_arg_parser()
     args, _ = parser.parse_known_args()
+    #args = parser.parse_args()
+
+
 
     if args.seed is not None:
         random.seed(args.seed)
@@ -374,17 +377,45 @@ if __name__ == "__main__":
 
     # merge the configuration from file with the default
     cfg = get_config_defaults()
+    #breakpoint()
     logger.info(f"\n\nOriginal Config:\n{cfg}")
     if args.config is not None:
         assert osp.exists(
             args.config
         ), f"Provided config, '{args.config}', does not exist."
         override_config = OmegaConf.load(args.config)
+        #if OmegaConf.is_readonly(cfg):
+        OmegaConf.set_readonly(cfg, False)
+        #breakpoint()
         cfg = OmegaConf.merge(cfg, override_config)  # type: ignore[assignment]
+        OmegaConf.set_readonly(cfg, True)
 
+    #breakpoint()
+    # all_objcts_seen = {}
+    # all_objcts_unseen = {}
+    # for object_desc in cfg['object_sets']:
+    #     if object_desc['name'][:4] == 'test':
+    #         name = object_desc['name'].replace('test_unseen_', '')
+    #         if not (name in all_objcts_seen):
+    #             all_objcts_seen[name] = len(all_objcts_seen)
+    #     else:
+    #         name = object_desc['name'].replace('seen_', '')
+    #         if not (name in all_objcts_unseen):
+    #             all_objcts_unseen[name] = len(all_objcts_unseen)
+
+    # keys = list(all_objcts_seen.keys())
+    # print(','.join(keys))
+
+    #Just filter out the objects in the 
+
+    #breakpoint()
+
+    print("worked 1")
     logger.info(f"\n\nModified Config:\n{cfg}\n\n")
 
     dataset = RearrangeDatasetV0()
+    print("worked 2")
+
     with RearrangeEpisodeGenerator(
         cfg=cfg,
         debug_visualization=args.debug,
@@ -401,12 +432,14 @@ if __name__ == "__main__":
             print_metadata_mediator(mm)
         else:
             import time
-
+            print("worked 3")
             start_time = time.time()
+            #breakpoint()
             dataset.episodes += ep_gen.generate_episodes(
                 args.num_episodes, args.verbose
             )
             output_path = args.out
+            print("worked 4")
             if output_path is None:
                 # default
                 output_path = "rearrange_ep_dataset.json.gz"

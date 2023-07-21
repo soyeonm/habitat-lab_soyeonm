@@ -109,11 +109,11 @@ class ObjectSampler:
         """
         if self.receptacle_instances is None:
             self.receptacle_instances = find_receptacles(sim)
-
+        #breakpoint()
         match_recep_sets = [
             recep_tracker.recep_sets[k] for k in self._allowed_recep_set_names
         ]
-
+        #breakpoint()
         if self._recep_set_sample_probs is not None:
             sample_weights = [
                 self._recep_set_sample_probs[k]
@@ -122,14 +122,14 @@ class ObjectSampler:
             match_recep_sets = random.choices(
                 match_recep_sets, weights=sample_weights
             )
-
+        #breakpoint()
         if match_recep_sets[0].is_on_top_of_sampler:
             rs = match_recep_sets[0]
             return OnTopOfReceptacle(
                 rs.name,
                 rs.included_receptacle_substrings,
             )
-
+        #breakpoint()
         if self.receptacle_candidates is None:
             self.receptacle_candidates = []
             for receptacle in self.receptacle_instances:

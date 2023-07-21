@@ -41,6 +41,7 @@ from habitat.datasets.rearrange.samplers.receptacle import (  # get_receptacle_v
 from habitat.sims.habitat_simulator.debug_visualizer import DebugVisualizer
 from habitat.utils.common import cull_string_list_by_substrings
 from habitat_sim.nav import NavMeshSettings
+from omegaconf import OmegaConf
 
 
 def get_sample_region_ratios(load_dict) -> Dict[str, float]:
@@ -106,6 +107,7 @@ class RearrangeEpisodeGenerator:
             habitat_sim.physics.ManagedRigidObject
         ] = []
         self.num_ep_generated = 0
+        #breakpoint()
 
     def _get_resource_sets(self) -> None:
         """
@@ -157,13 +159,13 @@ class RearrangeEpisodeGenerator:
                     object_set[list_key], Sequence
                 ), f"cfg.object_sets - '{object_set['name']}' '{list_key}' must be a list of strings."
             self._obj_sets[
-                object_set["name"]
+                object_set["name"] #e.g. 'test_unseen_vase'
             ] = cull_string_list_by_substrings(
                 self.sim.get_object_template_manager().get_template_handles(),
-                object_set["included_substrings"],
-                object_set["excluded_substrings"],
+                object_set["included_substrings"], #e.g. ['B07B8NZQ68', 'B078JMJC49', 'B078JGHZT3', 'B075HXJPW6', 'B078JMJC46', 'B075HWX46K', 'B075HXLWT5', 'B07JM6GHC8', 'B078JGYJTG', 'B07HSMVFMP', 'B075HWMC6S', 'B07B8VJBCL']
+                object_set["excluded_substrings"], #e.g. []
             )
-
+        #breakpoint()
         # receptacle sets
         expected_list_keys = [
             "included_object_substrings",
@@ -246,6 +248,7 @@ class RearrangeEpisodeGenerator:
         """
 
         self._target_samplers: Dict[str, samplers.ObjectTargetSampler] = {}
+        #breakpoint()
         for target_sampler_info in self.cfg.object_target_samplers:
             assert "name" in target_sampler_info
             assert "type" in target_sampler_info
@@ -420,11 +423,13 @@ class RearrangeEpisodeGenerator:
         """
         Generate a fixed number of episodes.
         """
+        #breakpoint()
         generated_episodes: List[RearrangeEpisode] = []
         failed_episodes = 0
         if verbose:
             pbar = tqdm(total=num_episodes)
         while len(generated_episodes) < num_episodes:
+            #new_episode = self.generate_single_episode()
             try:
                 new_episode = self.generate_single_episode()
             except:
@@ -448,26 +453,26 @@ class RearrangeEpisodeGenerator:
         """
         Generate a single episode, sampling the scene.
         """
-
+        #breakpoint()
         # Reset the number of allowed objects per receptacle.
         recep_tracker = ReceptacleTracker(
             dict(self.cfg.max_objects_per_receptacle),
             self._receptacle_sets,
         )
-
+        #breakpoint()
         self._reset_samplers()
         self.episode_data: Dict[str, Dict[str, Any]] = {
             "sampled_objects": {},  # object sampler name -> sampled object instances
             "sampled_targets": {},  # target sampler name -> (object, target state)
         }
-
+        #breakpoint()
         ep_scene_handle = self.generate_scene()
         scene_base_dir = osp.dirname(osp.dirname(ep_scene_handle))
-
+        #breakpoint()
         recep_tracker.init_scene_filters(
             mm=self.sim.metadata_mediator, scene_handle=ep_scene_handle
         )
-
+        #breakpoint()
         scene_name = ep_scene_handle.split(".")[0]
         if "fphab" in scene_base_dir:
             navmesh_path = osp.join(
@@ -479,6 +484,7 @@ class RearrangeEpisodeGenerator:
             navmesh_path = osp.join(
                 scene_base_dir, "navmeshes", scene_name + ".navmesh"
             )
+        #breakpoint()
 
         # Load navmesh
         if not self.cfg.regenerate_new_mesh:
@@ -489,12 +495,12 @@ class RearrangeEpisodeGenerator:
             self.sim.navmesh_settings.agent_radius = self.cfg.agent_radius
             self.sim.navmesh_settings.agent_height = self.cfg.agent_height
             self.sim.navmesh_settings.include_static_objects = True
-            self.sim.navmesh_settings.agent_max_climb = (
-                self.cfg.agent_max_climb
-            )
-            self.sim.navmesh_settings.agent_max_slope = (
-                self.cfg.agent_max_slope
-            )
+            # self.sim.navmesh_settings.agent_max_climb = (
+            #     self.cfg.agent_max_climb
+            # )
+            # self.sim.navmesh_settings.agent_max_slope = (
+            #     self.cfg.agent_max_slope
+            # )
             self.sim.recompute_navmesh(
                 self.sim.pathfinder,
                 self.sim.navmesh_settings,
@@ -502,6 +508,7 @@ class RearrangeEpisodeGenerator:
             os.makedirs(osp.dirname(navmesh_path), exist_ok=True)
             self.sim.pathfinder.save_nav_mesh(navmesh_path)
 
+        #breakpoint()
         # prepare target samplers
         self._get_object_target_samplers()
         target_numbers: Dict[str, int] = {
@@ -515,45 +522,65 @@ class RearrangeEpisodeGenerator:
             targ_sampler_name_to_obj_sampler_names[
                 sampler_name
             ] = targ_sampler_cfg["params"]["object_samplers"]
+        #breakpoint() 
 
+        #Jimmy: starting object receptacle
         # sample and allocate receptacles to contain the target objects
         target_receptacles = defaultdict(list)
         all_target_receptacles = []
         for sampler_name, num_targets in target_numbers.items():
             new_target_receptacles: List[Receptacle] = []
             failed_samplers: Dict[str, bool] = defaultdict(bool)
-            while len(new_target_receptacles) < num_targets:
+            #breakpoint()
+            #Sample from the same receptacle
+            #while len(new_target_receptacles) < num_targets: #Get pose and do while here
+            while len(new_target_receptacles) ==0:
                 assert len(failed_samplers.keys()) < len(
                     targ_sampler_name_to_obj_sampler_names[sampler_name]
                 ), f"All target samplers failed to find a match for '{sampler_name}'."
                 obj_sampler_name = random.choice(
                     targ_sampler_name_to_obj_sampler_names[sampler_name]
                 )
-
+                #breakpoint() #ran until here
                 sampler = self._obj_samplers[obj_sampler_name]
+                #breakpoint()
                 new_receptacle = None
+                #breakpoint() #Worked until here!
                 try:
-                    new_receptacle = sampler.sample_receptacle(
-                        self.sim, recep_tracker
-                    )
+                    new_receptacle = sampler.sample_receptacle(self.sim, recep_tracker)
+                    #breakpoint()
                 except AssertionError:
                     # No receptacle instances found matching this sampler's requirements, likely ran out of allocations and a different sampler should be tried
+                    #breakpoint()
                     failed_samplers[obj_sampler_name]
                     continue
-
+                #breakpoint()
                 if recep_tracker.allocate_one_placement(new_receptacle):
                     # used up new_receptacle, need to recompute the sampler's receptacle_candidates
                     sampler.receptacle_candidates = None
-                new_receptacle = get_navigable_receptacles(
+                get_nav_recep_result = get_navigable_receptacles(
                     self.sim, [new_receptacle]
                 )  # type: ignore
+                new_receptacle = [elt[0] for elt in get_nav_recep_result]
+                medians = [elt[1] for elt in get_nav_recep_result]
+                #breakpoint()
                 # _, new_receptacle = get_receptacle_viewpoints(self.sim, new_receptacle)
                 if len(new_receptacle) != 0:  # type: ignore
                     new_target_receptacles.append(new_receptacle[0])  # type: ignore
+                    new_target_receptacles.append(new_receptacle[0]) 
+                #breakpoint()
 
+
+            #OmegaConf.set_readonly(target_receptacles[obj_sampler_name], True)
             target_receptacles[obj_sampler_name].extend(new_target_receptacles)
+            #OmegaConf.set_readonly(target_receptacles[obj_sampler_name], False)
+            #OmegaConf.set_readonly(all_target_receptacles, True)
             all_target_receptacles.extend(new_target_receptacles)
+            #OmegaConf.set_readonly(all_target_receptacles, False)
 
+
+        #Jimmy: goal object receptacle
+        #Repeating code as above
         # sample and allocate receptacles to contain the goal states for target objects
         goal_receptacles = {}
         all_goal_receptacles = []
@@ -573,18 +600,27 @@ class RearrangeEpisodeGenerator:
                     # used up new_receptacle, need to recompute the sampler's receptacle_candidates
                     sampler.receptacle_candidates = None
 
-                new_receptacle = get_navigable_receptacles(
+                # new_receptacle = get_navigable_receptacles(
+                #     self.sim, [new_receptacle]
+                # )  # type: ignore
+                get_nav_recep_result = get_navigable_receptacles(
                     self.sim, [new_receptacle]
                 )  # type: ignore
+                new_receptacle = [elt[0] for elt in get_nav_recep_result]
+                medians = [elt[1] for elt in get_nav_recep_result]
                 if len(new_receptacle) != 0:  # type: ignore
                     new_goal_receptacles.append(new_receptacle[0])  # type: ignore
 
             goal_receptacles[sampler_name] = new_goal_receptacles
+            #OmegaConf.set_readonly(all_goal_receptacles, True)
             all_goal_receptacles.extend(new_goal_receptacles)
+            #OmegaConf.set_readonly(all_goal_receptacles, False)
+        #breakpoint()
 
         # Goal and target containing receptacles are allowed 1 extra maximum object for each goal/target if a limit was defined
         for recep in [*all_goal_receptacles, *all_target_receptacles]:
             recep_tracker.inc_count(recep.unique_name)
+        #breakpoint()
 
         # sample AO states for objects in the scene
         # ao_instance_handle -> [ (link_ix, state), ... ]
@@ -601,7 +637,7 @@ class RearrangeEpisodeGenerator:
                     ao_states[sampled_instance.handle] = {}
                 for link_ix, joint_state in link_states.items():
                     ao_states[sampled_instance.handle][link_ix] = joint_state
-
+        #breakpoint()
         # visualize after setting AO states to correctly see scene state
         if self._render_debug_obs:
             self.visualize_scene_receptacles()
@@ -610,6 +646,7 @@ class RearrangeEpisodeGenerator:
         # track a list of target objects to be used for settle culling later
         target_object_names: List[str] = []
         # sample object placements
+        #Jimmt: Object placements
         self.object_to_containing_receptacle: Dict[str, Receptacle] = {}
         for sampler_name, obj_sampler in self._obj_samplers.items():
             object_sample_data = obj_sampler.sample(
@@ -623,6 +660,7 @@ class RearrangeEpisodeGenerator:
                 return None
             new_objects, receptacles = zip(*object_sample_data)
             # collect names of all newly placed target objects
+            #OmegaConf.set_readonly(target_object_names, True)
             target_object_names.extend(
                 [
                     obj.handle
@@ -631,6 +669,7 @@ class RearrangeEpisodeGenerator:
                     ]
                 ]
             )
+            #OmegaConf.set_readonly(target_object_names, False)
             for obj, rec in zip(new_objects, receptacles):
                 self.object_to_containing_receptacle[obj.handle] = rec
             if sampler_name not in self.episode_data["sampled_objects"]:
@@ -681,7 +720,6 @@ class RearrangeEpisodeGenerator:
             ]
 
         target_refs: Dict[str, str] = {}
-
         # sample goal positions for target objects after all other clutter is placed and validated
         handle_to_obj = {obj.handle: obj for obj in self.ep_sampled_objects}
         for sampler_name, target_sampler in self._target_samplers.items():
@@ -784,7 +822,7 @@ class RearrangeEpisodeGenerator:
             )
 
         self.num_ep_generated += 1
-
+        #breakpoint()
         def extract_recep_info(recep):
             return (recep.parent_object_handle, recep.parent_link)
 
@@ -799,7 +837,7 @@ class RearrangeEpisodeGenerator:
             k: v.unique_name
             for k, v in self.object_to_containing_receptacle.items()
         }
-
+        #breakpoint()
         return RearrangeEpisode(
             scene_dataset_config=self.cfg.dataset_path,
             additional_obj_config_paths=self.cfg.additional_object_paths,

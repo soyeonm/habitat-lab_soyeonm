@@ -28,6 +28,7 @@ from habitat.utils.geometry_utils import random_triangle_point
 
 # global module singleton for mesh importing instantiated upon first import
 _manager = mn.trade.ImporterManager()
+from omegaconf import OmegaConf
 
 
 class Receptacle(ABC):
@@ -752,18 +753,17 @@ def find_receptacles(
     stage_config = sim.get_stage_initialization_template()
     if stage_config is not None:
         stage_user_attr = stage_config.get_user_config()
-        receptacles.extend(
-            parse_receptacles_from_user_config(
-                stage_user_attr,
-                parent_template_directory=stage_config.file_directory,
-            )
-        )
+        #breakpoint()
+        #OmegaConf.set_readonly(receptacles, False)
+        receptacles.extend(parse_receptacles_from_user_config(stage_user_attr,parent_template_directory=stage_config.file_directory,))
+        #OmegaConf.set_readonly(receptacles, True)
 
     # rigid object receptacles
     for obj_handle in obj_mgr.get_object_handles():
         obj = obj_mgr.get_object_by_handle(obj_handle)
         source_template_file = obj.creation_attributes.file_directory
         user_attr = obj.user_attributes
+        #OmegaConf.set_readonly(receptacles, False)
         receptacles.extend(
             parse_receptacles_from_user_config(
                 user_attr,
@@ -771,6 +771,7 @@ def find_receptacles(
                 parent_template_directory=source_template_file,
             )
         )
+        #OmegaConf.set_readonly(receptacles, True)
 
     # articulated object receptacles
     for obj_handle in ao_mgr.get_object_handles():
@@ -778,6 +779,7 @@ def find_receptacles(
         # TODO: no way to get filepath from AO currently. Add this API.
         source_template_file = ""
         user_attr = obj.user_attributes
+        #OmegaConf.set_readonly(receptacles, False)
         receptacles.extend(
             parse_receptacles_from_user_config(
                 user_attr,
@@ -790,6 +792,7 @@ def find_receptacles(
                 ao_uniform_scaling=obj.global_scale,
             )
         )
+        #OmegaConf.set_readonly(receptacles, True)
 
     return receptacles
 
@@ -835,8 +838,10 @@ class ReceptacleTracker:
         :param mm: The active MetadataMediator instance from which to load the filter data.
         :param scene_handle: The handle of the currently instantiated scene.
         """
+        #breakpoint()
         scene_user_defined = mm.get_scene_user_defined(scene_handle)
         filtered_unique_names = []
+        #breakpoint()
         if scene_user_defined is not None and scene_user_defined.has_value(
             "scene_filter_file"
         ):
@@ -845,6 +850,7 @@ class ReceptacleTracker:
             scene_filter_file = os.path.join(
                 os.path.dirname(mm.active_dataset), scene_filter_file
             )
+            #breakpoint()
             with open(scene_filter_file, "r") as f:
                 filter_json = json.load(f)
                 for filter_type in [
@@ -853,13 +859,17 @@ class ReceptacleTracker:
                     "stability_filtered",
                     "height_filtered",
                 ]:
+                    #breakpoint()
                     for filtered_unique_name in filter_json[filter_type]:
                         filtered_unique_names.append(filtered_unique_name)
+            #breakpoint()
             # add exclusion filters to all receptacles sets
             for _, r_set in self._receptacle_sets.items():
-                r_set.excluded_receptacle_substrings.extend(
-                    filtered_unique_names
-                )
+                #breakpoint()
+                OmegaConf.set_readonly(r_set.excluded_receptacle_substrings, False)
+                r_set.excluded_receptacle_substrings.extend(filtered_unique_names)
+                OmegaConf.set_readonly(r_set.excluded_receptacle_substrings, True)
+            #breakpoint()
             logger.debug(
                 f"Loaded receptacle filter data for scene '{scene_handle}' from configured filter file '{scene_filter_file}'."
             )
@@ -960,13 +970,15 @@ def get_navigable_receptacles(
         receptacle_obj = obj_mgr.get_object_by_handle(
             receptacle.parent_object_handle
         )
-        receptacle_bb = get_aabb(
-            receptacle_obj.object_id, sim, transformed=True
-        )
+        #breakpoint()
+        receptacle_bb = get_aabb(receptacle_obj.object_id, sim, transformed=True)
+        #added
+        median = (receptacle_bb.back_bottom_left + receptacle_bb.back_bottom_right + receptacle_bb.front_bottom_left + receptacle_bb.front_bottom_right)/ 4.0
 
+        #breakpoint()
         if (
             receptacle_bb.size_y()
-            > sim.pathfinder.nav_mesh_settings.agent_height - 0.2
+            > sim.navmesh_settings.agent_height - 0.2 #sim.pathfinder.nav_mesh_settings.agent_height - 0.2
         ):
             logger.info(
                 f"Receptacle {receptacle.parent_object_handle}, {receptacle_obj.translation} is too tall. Skipping."
@@ -1004,7 +1016,7 @@ def get_navigable_receptacles(
             logger.info(
                 f"Receptacle {receptacle.parent_object_handle}, {receptacle_obj.translation} is accessible."
             )
-            navigable_receptacles.append(receptacle)
+            navigable_receptacles.append((receptacle, median))
 
     logger.info(
         f"Found {len(navigable_receptacles)}/{len(receptacles)} accessible receptacles."
