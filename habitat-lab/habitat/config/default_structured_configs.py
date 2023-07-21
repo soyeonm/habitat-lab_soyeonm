@@ -1268,6 +1268,8 @@ class TaskConfig(HabitatBaseConfig):
     save_dir: str = ""
     place_human_visible: bool = False
     place_spot_visible: bool = False
+    save_action_sequences: bool = False
+    #read_action_sequences: bool = False
 
 
 

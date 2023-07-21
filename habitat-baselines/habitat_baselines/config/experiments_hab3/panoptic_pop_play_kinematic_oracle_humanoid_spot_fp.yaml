@@ -43,6 +43,8 @@ habitat:
   dataset:
     data_path: data/datasets/floorplanner/rearrange/scratch/train/jul19_same_recep_100_episodes.json.gz #sampled_20_largetrain_15s_15000epi_2obj.json.gz #jul14_same_recep_100_episodes.json.gz #start_same_recep.json.gz #sampled_20_largetrain_15s_15000epi_2obj.json.gz
   task:
+    save_action_sequences:
+      True
     save_dir:
       "../RERE_panoptic_save_dir"
     actions:
@@ -109,12 +111,12 @@ habitat:
         articulated_agent_type: "SpotRobot"
         sim_sensors:
           arm_rgb_sensor:
-            height: 480
-            width: 640
-            hfov: 120
+            height: 480 #224 #480
+            width: 640 #171 #640
+            hfov: 120 #79 #47
           arm_depth_sensor:
-            height: 224
-            width: 171
+            height: 480 #224 #480 #224
+            width: 640 #171 #640 #171
             hfov: 120
           arm_panoptic_sensor:
             height: 480
