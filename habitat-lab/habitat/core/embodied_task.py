@@ -490,7 +490,7 @@ class EmbodiedTask:
             if self._cur_episode_step==0:
                 articulated_agent0 = self._sim.get_agent_data(0).articulated_agent
                 articulated_agent1 = self._sim.get_agent_data(1).articulated_agent
-                breakpoint()
+                #breakpoint()
                 starting_poses = {'agent_0':{'base_pos': np.array(articulated_agent0.base_pos), 'base_rot':float(articulated_agent0.base_rot)},
                                 'agent_1':{'base_pos': np.array(articulated_agent1.base_pos), 'base_rot':float(articulated_agent1.base_rot)}}
                 # starting_poses = {'agent_0':{'base_pos': np.array(articulated_agent0.), 'base_rot':float(articulated_agent0.base_rot)},
