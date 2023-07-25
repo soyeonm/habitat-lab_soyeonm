@@ -322,13 +322,17 @@ class EmbodiedTask:
             action_name in self.actions
         ), f"Can't find '{action_name}' action in {self.actions.keys()}."
         task_action = self.actions[action_name]
-        observations.update(
-            task_action.step(
-                **action["action_args"],
-                task=self,
-                is_last_action=is_last_action,
+        #breakpoint()
+        if action_name == 'agent_1_oracle_nav_action':
+            pass
+        else:
+            observations.update(
+                task_action.step(
+                    **action["action_args"],
+                    task=self,
+                    is_last_action=is_last_action,
+                )
             )
-        )
 
     #Just added for my purpsoe
     def any_target_1_visible_gt(self, panoptic):
