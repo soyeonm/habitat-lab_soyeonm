@@ -400,6 +400,7 @@ class BaseVelAction(ArticulatedAgentAction):
         self.cur_articulated_agent.sim_obj.joint_velocities = set_dat["vel"]
         self.cur_articulated_agent.sim_obj.joint_forces = set_dat["pos"]
 
+
     def update_base(self):
         ctrl_freq = self._sim.ctrl_freq
 
@@ -426,6 +427,17 @@ class BaseVelAction(ArticulatedAgentAction):
         )
 
         self.cur_articulated_agent.sim_obj.transformation = target_trans
+
+        #Just added temporarily
+        # self._sim.internal_step(-1)
+        # colls = self._sim.get_collisions()
+        # did_coll, _ = rearrange_collision(
+        #     colls, self._sim.snapped_obj_id, False
+        # )
+        did_coll = self._sim.contact_test(
+            0#self._sim.articulated_agent.get_robot_sim_id()
+        )
+        print("did col is ", did_coll)
 
         if not self._allow_dyn_slide:
             # Check if in the new articulated_agent state the arm collides with anything.
@@ -496,6 +508,7 @@ class BaseVelNonCylinderAction(ArticulatedAgentAction):
         self._ang_speed = self._config.ang_speed
         self._navmesh_offset = self._config.navmesh_offset
         self._enable_lateral_move = self._config.enable_lateral_move
+        self.last_did_col =  None
 
     @property
     def action_space(self):
@@ -600,6 +613,8 @@ class BaseVelNonCylinderAction(ArticulatedAgentAction):
         did_coll, new_target_trans = self.collision_check(
             trans, target_trans, target_rigid_state, compute_sliding
         )
+        self.last_did_col = did_coll
+
         # Update the base
         self.cur_articulated_agent.sim_obj.transformation = new_target_trans
 
@@ -624,7 +639,10 @@ class BaseVelNonCylinderAction(ArticulatedAgentAction):
             longitudinal_lin_vel, ang_vel = kwargs[
                 self._action_arg_prefix + "base_vel"
             ]
-
+        # if self.last_did_col:
+        #     lateral_lin_vel = 20.0
+        #     longitudinal_lin_vel, ang_vel = 0.0, 0.0
+        #breakpoint()
         longitudinal_lin_vel = (
             np.clip(longitudinal_lin_vel, -1, 1) * self._longitudinal_lin_speed
         )
