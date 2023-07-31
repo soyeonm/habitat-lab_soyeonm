@@ -313,6 +313,7 @@ def get_topdown_map(
         meters_per_pixel = calculate_meters_per_pixel(
             map_resolution, pathfinder=pathfinder
         )
+    #breakpoint()
 
     top_down_map = pathfinder.get_topdown_view(
         meters_per_pixel=meters_per_pixel, height=height

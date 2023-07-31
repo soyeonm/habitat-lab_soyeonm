@@ -583,15 +583,15 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                     (final_nav_targ - robot_pos)[[0, 2]]
                 )
                 at_goal = (
-                    dist_to_final_nav_targ < self._dist_thresh
-                    and angle_to_obj < self._turn_thresh
-                ) or dist_to_final_nav_targ < self._dist_thresh / 10.0
+                    dist_to_final_nav_targ < self._config.dist_thresh
+                    and angle_to_obj < self._config.turn_thresh
+                )
 
                 # Planning to see if the robot needs to do back-up
                 need_move_backward = False
                 if (
-                    dist_to_final_nav_targ >= self._dist_thresh
-                    and angle_to_target >= self._turn_thresh
+                    dist_to_final_nav_targ >= self._config.dist_thresh
+                    and angle_to_target >= self._config.turn_thresh
                     and not at_goal
                 ):
                     # check if there is a collision caused by rotation
@@ -619,25 +619,26 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                         (final_nav_targ - robot_pos)[[0, 2]]
                     )
                     at_goal = (
-                        dist_to_final_nav_targ < self._dist_thresh
-                        and angle_to_obj < self._turn_thresh
+                        dist_to_final_nav_targ < self._config.dist_thresh
+                        and angle_to_obj < self._config.turn_thresh
                     )
+
 
                 if self.motion_type == "base_velocity":
                     if not at_goal:
                         self.at_goal = False
-                        if dist_to_final_nav_targ < self._dist_thresh:
+                        if dist_to_final_nav_targ < self._config.dist_thresh:
                             # Look at the object
                             vel = OracleNavAction._compute_turn(
-                                rel_pos, self._turn_velocity, robot_forward
+                                rel_pos, self._config.turn_velocity, robot_forward
                             )
-                        elif angle_to_target < self._turn_thresh:
+                        elif angle_to_target < self._config.turn_thresh:
                             # Move towards the target
-                            vel = [self._forward_velocity, 0]
+                            vel = [self._config.forward_velocity, 0]
                         else:
                             # Look at the target waypoint.
                             vel = OracleNavAction._compute_turn(
-                                rel_targ, self._turn_velocity, robot_forward
+                                rel_targ, self._config.turn_velocity, robot_forward
                             )
                     else:
                         self.at_goal = True
@@ -647,16 +648,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                     if need_move_backward:
                         vel[0] = -1 * vel[0]
 
-                    # If the human and robot are too close to each other, pause the robot
-                    if (
-                        self._config.agents_dist_thresh != -1
-                        and robot_human_dis is not None
-                        and robot_human_dis < self._config.agents_dist_thresh
-                    ):
-                        vel = [0, 0]
-
                     kwargs[f"{self._action_arg_prefix}base_vel"] = np.array(vel)
-
                     return BaseVelNonCylinderAction.step(
                         self, *args, is_last_action=is_last_action, **kwargs
                     )
@@ -666,7 +658,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                     self.humanoid_controller.obj_transform_base = base_T
                     if not at_goal:
                         self.at_goal = False
-                        if dist_to_final_nav_targ < self._dist_thresh:
+                        if dist_to_final_nav_targ < self._config.dist_thresh:
                             # Look at the object
                             self.humanoid_controller.calculate_turn_pose(
                                 mn.Vector3([rel_pos[0], 0.0, rel_pos[1]])
@@ -690,6 +682,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                     return HumanoidJointAction.step(
                         self, *args, is_last_action=is_last_action, **kwargs
                     )
+
                 else:
                     raise ValueError(
                         "Unrecognized motion type for oracle nav action"
