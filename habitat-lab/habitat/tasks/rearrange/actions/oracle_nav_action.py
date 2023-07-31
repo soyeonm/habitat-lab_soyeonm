@@ -648,6 +648,10 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                     if need_move_backward:
                         vel[0] = -1 * vel[0]
 
+                    #For reading action sequences
+                    if self._config.enable_lateral_move and len(vel)==2:
+                        vel = [vel[0], 0, vel[1]]
+                    #breakpoint()
                     kwargs[f"{self._action_arg_prefix}base_vel"] = np.array(vel)
                     return BaseVelNonCylinderAction.step(
                         self, *args, is_last_action=is_last_action, **kwargs

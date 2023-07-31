@@ -504,6 +504,7 @@ class EmbodiedTask:
             pickle.dump(self.action_sequences, open(os.path.join(action_sequence_save_dir, "sequences.p"), 'wb'))
 
         #breakpoint()
+        #breakpoint()
         action_name = action["action"]
         if "action_args" not in action or action["action_args"] is None:
             action["action_args"] = {}
