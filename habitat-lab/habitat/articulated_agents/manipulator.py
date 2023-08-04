@@ -271,7 +271,8 @@ class Manipulator(ArticulatedAgentInterface):
         ).transformation
         ef_link_transform.translation = ef_link_transform.transform_point(
             self.ee_local_offset(ee_index)
-        )
+        ) #my coordinate -> world coordinate 
+        #ef_link_transform.inverse().transform_point #world coordinate -> my coordinate 
         return ef_link_transform
 
     def clip_ee_to_workspace(

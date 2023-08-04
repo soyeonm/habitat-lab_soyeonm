@@ -1369,6 +1369,18 @@ class HabitatSimFisheyeSemanticSensorConfig(SimulatorFisheyeSensorConfig):
     type: str = "HabitatSimFisheyeSemanticSensor"
 
 
+# @dataclass
+# class HeadSteroRightSensorConfig(HabitatSimRGBSensorConfig):
+#     uuid: str = "head_stero_right"
+#     width: int = 256
+#     height: int = 256
+
+# @dataclass
+# class HeadSteroLeftConfig(HabitatSimRGBSensorConfig):
+#     uuid: str = "head_stero_left"
+#     width: int = 256
+#     height: int = 256
+
 @dataclass
 class HeadRGBSensorConfig(HabitatSimRGBSensorConfig):
     uuid: str = "head_rgb"
@@ -1860,6 +1872,18 @@ cs.store(
     name="head_rgb_sensor",
     node=HeadRGBSensorConfig,
 )
+
+# cs.store(
+#     group="habitat/simulator/sim_sensors",
+#     name="head_stero_right",
+#     node=HeadSteroRightConfig,
+# )
+
+# cs.store(
+#     group="habitat/simulator/sim_sensors",
+#     name="head_stero_left",
+#     node=HeadSteroLeftConfig,
+# )
 
 cs.store(
     group="habitat/simulator/sim_sensors",

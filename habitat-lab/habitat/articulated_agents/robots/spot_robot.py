@@ -129,6 +129,15 @@ class SpotRobot(MobileManipulator):
                     attached_link_id=6,
                     relative_transform=mn.Matrix4.rotation_z(mn.Deg(-90)),
                 ),
+                "head_rgb": ArticulatedAgentCameraParams(
+                    cam_offset_pos=mn.Vector3(
+                        0.4164822634134684, 0.0, -0.00062776955
+                    ),
+                    cam_orientation=mn.Vector3(
+                        -1.5417177, -0.940569, 1.180808115
+                    ),
+                    attached_link_id=-1,
+                ),
                 "head_stereo_right": ArticulatedAgentCameraParams(
                     cam_offset_pos=mn.Vector3(
                         0.4164822634134684, 0.0, 0.03614789234067159
