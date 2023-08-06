@@ -357,7 +357,7 @@ class SimpleVelocityControlEnv:
             target_rigid_state.translation,
         )
 
-        return target_trans
+        return target_trans 
 
 
 @registry.register_task_action
