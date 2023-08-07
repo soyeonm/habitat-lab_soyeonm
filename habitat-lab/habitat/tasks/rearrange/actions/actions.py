@@ -665,6 +665,11 @@ class BaseVelNonCylinderAction(ArticulatedAgentAction):
         ):
             self.update_base(ang_vel != 0.0)
 
+        if self._action_arg_prefix + "tele" in kwargs:
+            breakpoint()
+            self.cur_articulated_agent.base_pos = kwargs[
+                    self._action_arg_prefix + "tele"
+                ]
         if is_last_action:
             return self._sim.step(HabitatSimActions.base_velocity)
         else:

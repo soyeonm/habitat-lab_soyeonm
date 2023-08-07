@@ -535,6 +535,10 @@ def get_robot_spawns(
     # Try to place the robot.
     for _ in range(num_spawn_attempts):
         sim.set_state(state)
+        #breakpoint()
+        if target_position.shape == (3,):
+            breakpoint()
+            target_position = target_position.reshape((3, 1)).astype(np.float32)
         start_position = sim.pathfinder.get_random_navigable_point_near(
             target_position, distance_threshold
         )

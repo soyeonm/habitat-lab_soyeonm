@@ -16,7 +16,7 @@ from habitat.tasks.rearrange.actions.actions import (
     BaseVelNonCylinderAction,
     HumanoidJointAction,
 )
-from habitat.tasks.rearrange.utils import place_agent_at_dist_from_pos
+from habitat.tasks.rearrange.utils import place_agent_at_dist_from_pos, place_robot_at_closest_point
 from habitat.tasks.utils import get_angle
 from habitat_sim.physics import VelocityControl
 
@@ -145,6 +145,15 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
                 )
             self._targets[nav_to_target_idx] = (start_pos, np.array(obj_pos))
         return self._targets[nav_to_target_idx]
+
+    def found_path(self, point):
+        agent_pos = self.cur_articulated_agent.base_pos
+
+        path = habitat_sim.ShortestPath()
+        path.requested_start = agent_pos
+        path.requested_end = point
+        found_path = self._sim.pathfinder.find_path(path)
+        return found_path
 
     def _path_to_point(self, point):
         """
@@ -279,6 +288,7 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
                         vel = [0, 0]
                         self.skill_done = True
                     kwargs[f"{self._action_arg_prefix}base_vel"] = np.array(vel)
+
                     return BaseVelAction.step(
                         self, *args, is_last_action=is_last_action, **kwargs
                     )
@@ -505,17 +515,24 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         if move_freely:
             #same as self._get_target_for_idx
             obj_targ_pos = kwargs[self._action_arg_prefix + "oracle_nav_with_backing_up_action"] #goal_pose or stg pose from objectgoal_env  really
-            final_nav_targ, _, _ = place_agent_at_dist_from_pos(
-                np.array(obj_targ_pos),
-                0.0,
-                -1.0, #self._spawn_max_dist_to_obj,
-                self._sim,
-                self._num_spawn_attempts,
-                1,
-                self.cur_articulated_agent,
-                self._navmesh_offset_for_agent_placement,
-                #None,
+            # final_nav_targ, _, _ = place_agent_at_dist_from_pos(
+            #     np.array(obj_targ_pos),
+            #     0.0,
+            #     -1.0, #None, #-1.0, #self._spawn_max_dist_to_obj,
+            #     self._sim,
+            #     self._num_spawn_attempts,
+            #     1,
+            #     self.cur_articulated_agent,
+            #     self._navmesh_offset_for_agent_placement,
+            #     #None,
+            # )
+            #Replace to just sample until 
+            final_nav_targ, _, _ = place_robot_at_closest_point(
+                obj_targ_pos, self._sim, agent=self.cur_articulated_agent
             )
+            while not(self.found_path(final_nav_targ)):
+                final_nav_targ, _, _ = place_robot_at_closest_point(
+                obj_targ_pos, self._sim, agent=self.cur_articulated_agent)
             final_nav_targ = np.array(final_nav_targ)
 
         else:
@@ -609,6 +626,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
             print("at goal ", at_goal)
             print("dist_to_final_nav_targ", dist_to_final_nav_targ)
             print("angle_to_obj", angle_to_obj)
+            print("angle_to_target", angle_to_target)
 
             # Planning to see if the robot needs to do back-up
             need_move_backward = False
@@ -646,7 +664,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                     and angle_to_obj < self._config.turn_thresh
                 )
 
-
+            print("turn thresh is ",  self._config.turn_thresh)
             if self.motion_type == "base_velocity":
                 if not at_goal:
                     self.at_goal = False
@@ -656,6 +674,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                             rel_pos, self._config.turn_velocity, robot_forward
                         )
                     elif angle_to_target < self._config.turn_thresh:
+                        #breakpoint()
                         # Move towards the target
                         vel = [self._config.forward_velocity, 0]
                     else:
@@ -676,6 +695,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                     vel = [vel[0], 0, vel[1]]
                 #breakpoint()
                 kwargs[f"{self._action_arg_prefix}base_vel"] = np.array(vel)
+                kwargs[f"{self._action_arg_prefix}tele"] = final_nav_targ #obj_targ_pos
                 return BaseVelNonCylinderAction.step(
                     self, *args, is_last_action=is_last_action, **kwargs
                 )
