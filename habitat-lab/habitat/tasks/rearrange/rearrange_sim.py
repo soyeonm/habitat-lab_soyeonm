@@ -412,35 +412,35 @@ class RearrangeSim(HabitatSim):
         navmesh_path = osp.join(base_dir, "navmeshes", scene_name + ".navmesh")
 
         # If we cannot load the navmesh, try generarting navmesh on the fly.
-        if osp.exists(navmesh_path):
-            self.pathfinder.load_nav_mesh(navmesh_path)
+        # if osp.exists(navmesh_path):
+        #     self.pathfinder.load_nav_mesh(navmesh_path)
+        #else:
+        navmesh_settings = NavMeshSettings()
+        navmesh_settings.set_defaults()
+
+        if hasattr(self.habitat_config.agents, "agent_0"):
+            radius = self.habitat_config.agents.agent_0.radius
+            height = self.habitat_config.agents.agent_0.height
+            max_climb = self.habitat_config.agents.agent_0.max_climb
+        elif hasattr(self.habitat_config.agents, "main_agent"):
+            radius = self.habitat_config.agents.main_agent.radius
+            height = self.habitat_config.agents.main_agent.height
+            max_climb = self.habitat_config.agents.main_agent.max_climb
         else:
-            navmesh_settings = NavMeshSettings()
-            navmesh_settings.set_defaults()
+            raise ValueError(f"Cannot find agent parameters.")
+        navmesh_settings.agent_radius = radius
+        navmesh_settings.agent_height = height
+        navmesh_settings.agent_max_climb = max_climb
 
-            if hasattr(self.habitat_config.agents, "agent_0"):
-                radius = self.habitat_config.agents.agent_0.radius
-                height = self.habitat_config.agents.agent_0.height
-                max_climb = self.habitat_config.agents.agent_0.max_climb
-            elif hasattr(self.habitat_config.agents, "main_agent"):
-                radius = self.habitat_config.agents.main_agent.radius
-                height = self.habitat_config.agents.main_agent.height
-                max_climb = self.habitat_config.agents.main_agent.max_climb
-            else:
-                raise ValueError(f"Cannot find agent parameters.")
-            navmesh_settings.agent_radius = radius
-            navmesh_settings.agent_height = height
-            navmesh_settings.agent_max_climb = max_climb
-
-            # self.recompute_navmesh(
-            #     self.pathfinder,
-            #     navmesh_settings,
-            #     include_static_objects=True,
-            # )
-            navmesh_settings.include_static_objects = True
-            self.recompute_navmesh(self.pathfinder, navmesh_settings)
-            os.makedirs(osp.dirname(navmesh_path), exist_ok=True)
-            self.pathfinder.save_nav_mesh(navmesh_path)
+        # self.recompute_navmesh(
+        #     self.pathfinder,
+        #     navmesh_settings,
+        #     include_static_objects=True,
+        # )
+        navmesh_settings.include_static_objects = True #False #True
+        self.recompute_navmesh(self.pathfinder, navmesh_settings)
+        os.makedirs(osp.dirname(navmesh_path), exist_ok=True)
+        self.pathfinder.save_nav_mesh(navmesh_path)
 
         self._navmesh_vertices = np.stack(
             self.pathfinder.build_navmesh_vertices(), axis=0
@@ -507,6 +507,7 @@ class RearrangeSim(HabitatSim):
             # The point is not valid or not in a different island. Find a
             # different point nearby that is on a different island and is
             # valid.
+            #breakpoint()
             new_pos = self.pathfinder.get_random_navigable_point_near(
                 pos, 1.5, 1000
             )
@@ -526,6 +527,38 @@ class RearrangeSim(HabitatSim):
             new_pos = self._navmesh_vertices[closest_idx]
 
         return new_pos
+
+    def safe_snap_point_with_radius(self, agent_pos, island_idx, pos, start_radius=0.5, end_radius=6.5, rad_delta=0.5):
+        """
+        snap_point can return nan which produces hard to catch errors.
+        """
+        # new_pos = self.pathfinder.snap_point(pos)
+        # island_radius = self.pathfinder.island_radius(new_pos)
+        radius = start_radius
+        new_pos = self.pathfinder.get_random_navigable_point_near(pos, radius, 1000, island_idx)
+        path = habitat_sim.ShortestPath()
+        path.requested_start = agent_pos
+        path.requested_end = new_pos
+        found_path = self.pathfinder.find_path(path)
+
+        while (np.isnan(new_pos[0]) or not(found_path) ) and radius<=end_radius:
+            # The point is not valid or not in a different island. Find a
+            # different point nearby that is on a different island and is
+            # valid.
+            radius +=1
+            new_pos = self.pathfinder.get_random_navigable_point_near(
+                pos, radius, 1000, island_idx
+            )
+            path.requested_end = new_pos
+            found_path = self.pathfinder.find_path(path)
+            if not(np.isnan(new_pos[0])) and not(found_path):
+                while not(found_path):
+                    new_pos = self.pathfinder.get_random_navigable_point_near(pos, radius, 1000, island_idx)
+                    path.requested_end = new_pos
+                    found_path = self.pathfinder.find_path(path)
+
+        return new_pos
+
 
     def _add_objs(
         self, ep_info: RearrangeEpisode, should_add_objects: bool

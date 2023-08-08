@@ -16,9 +16,10 @@ from habitat.tasks.rearrange.actions.actions import (
     BaseVelNonCylinderAction,
     HumanoidJointAction,
 )
-from habitat.tasks.rearrange.utils import place_agent_at_dist_from_pos, place_robot_at_closest_point
+from habitat.tasks.rearrange.utils import place_agent_at_dist_from_pos, place_robot_at_closest_point, place_robot_at_closest_point_for_sem_map, place_robot_at_closest_point_for_sem_map_with_navmesh
 from habitat.tasks.utils import get_angle
 from habitat_sim.physics import VelocityControl
+import copy
 
 
 @registry.register_task_action
@@ -114,6 +115,9 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
             self._targets = {}
             self._prev_ep_id = self._task._episode_id
         self.skill_done = False
+        self.prev_obj_targ_pos = np.array([np.nan, np.nan, np.nan])
+        self.prev_final_nav_targ = np.array([np.nan, np.nan, np.nan])
+        self.at_goal_prev = False
 
     def _get_target_for_idx(self, nav_to_target_idx: int):
         nav_to_obj = self._poss_entities[nav_to_target_idx]
@@ -389,6 +393,8 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
             self._config.navmesh_offset_for_agent_placement
         )
         self._navmesh_offset = self._config.navmesh_offset
+        #breakpoint()
+        #self._navmesh_offset_for_agent_placement = ([[0.0, 0.0], [0.15, 0.0], [-0.15, 0.0]])
 
         self._nav_pos_3d = [
             np.array([xz[0], 0.0, xz[1]]) for xz in self._navmesh_offset
@@ -450,6 +456,41 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
             # Return true if the pathfinder says it is not navigable
             if not self._sim.pathfinder.is_navigable(pos):
                 return True
+
+        return False
+
+
+    def forward_collision_check(
+        self,
+        next_pos,
+    ):
+        """
+        This function checks if the robot needs to do backing-up action
+        """
+        # Make a copy of agent trans
+        trans = mn.Matrix4(self.cur_articulated_agent.sim_obj.transformation)
+        angle = float("inf")
+        # Get the current location of the agent
+        cur_pos = self.cur_articulated_agent.base_pos
+        # Set the trans to be agent location
+        trans.translation = self.cur_articulated_agent.base_pos
+
+        #while abs(angle) > self._turn_thresh:
+        # Compute the robot facing orientation
+        rel_pos = (next_pos - cur_pos)[[0, 2]]
+        forward = np.array([1.0, 0, 0])
+        robot_forward = np.array(trans.transform_vector(forward))
+        robot_forward = robot_forward[[0, 2]]
+        angle = get_angle(robot_forward, rel_pos)
+        # vel = OracleNavAction._compute_turn(
+        #     rel_pos, self._turn_velocity, robot_forward
+        # )
+        vel = [self._forward_velocity, 0]
+        trans = self._vc.act(trans, vel)
+        cur_pos = trans.translation
+
+        if self.is_collision(trans):
+            return True
 
         return False
 
@@ -516,24 +557,41 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
             #same as self._get_target_for_idx
             obj_targ_pos = kwargs[self._action_arg_prefix + "oracle_nav_with_backing_up_action"] #goal_pose or stg pose from objectgoal_env  really
             # final_nav_targ, _, _ = place_agent_at_dist_from_pos(
-            #     np.array(obj_targ_pos),
-            #     0.0,
-            #     -1.0, #None, #-1.0, #self._spawn_max_dist_to_obj,
-            #     self._sim,
-            #     self._num_spawn_attempts,
-            #     1,
-            #     self.cur_articulated_agent,
-            #     self._navmesh_offset_for_agent_placement,
-            #     #None,
-            # )
+            #         np.array(obj_targ_pos),
+            #         0.0,
+            #         -1.0, #None, #-1.0, #self._spawn_max_dist_to_obj,
+            #         self._sim,
+            #         self._num_spawn_attempts,
+            #         1,
+            #         self.cur_articulated_agent,
+            #         self._navmesh_offset_for_agent_placement,
+            #         #None,
+            #     )
+            # while not(self.found_path(final_nav_targ)):
+            #     final_nav_targ, _, _ = place_agent_at_dist_from_pos(
+            #         np.array(obj_targ_pos),
+            #         0.0,
+            #         -1.0, #None, #-1.0, #self._spawn_max_dist_to_obj,
+            #         self._sim,
+            #         self._num_spawn_attempts,
+            #         1,
+            #         self.cur_articulated_agent,
+            #         self._navmesh_offset_for_agent_placement,
+            #         #None,
+            #     )
             #Replace to just sample until 
-            final_nav_targ, _, _ = place_robot_at_closest_point(
-                obj_targ_pos, self._sim, agent=self.cur_articulated_agent
-            )
-            while not(self.found_path(final_nav_targ)):
-                final_nav_targ, _, _ = place_robot_at_closest_point(
-                obj_targ_pos, self._sim, agent=self.cur_articulated_agent)
-            final_nav_targ = np.array(final_nav_targ)
+            #don't replan!
+            if np.linalg.norm((obj_targ_pos - self.prev_obj_targ_pos)[[0, 2]])<=0.1: 
+                final_nav_targ = self.prev_final_nav_targ
+            else:
+                final_nav_targ = obj_targ_pos
+                while not(self.found_path(final_nav_targ)):
+                    # final_nav_targ, _, _ = place_robot_at_closest_point(
+                    # obj_targ_pos, self._sim, agent=self.cur_articulated_agent)
+                    #final_nav_targ, _, _ = place_robot_at_closest_point_for_sem_map(obj_targ_pos, self._sim, agent=self.cur_articulated_agent)
+                    final_nav_targ, _, _ = place_robot_at_closest_point_for_sem_map_with_navmesh(obj_targ_pos, self._sim, self._navmesh_offset_for_agent_placement,agent=self.cur_articulated_agent)
+                # place_robot_at_closest_point_with_navmesh(
+                final_nav_targ = np.array(final_nav_targ)
 
         else:
             nav_to_target_idx = int(nav_to_target_idx[0]) - 1
@@ -555,6 +613,8 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
 
         # Get the current robot/human pos assuming human is agent 1
         robot_human_dis = None
+        self.prev_obj_targ_pos = copy.deepcopy(obj_targ_pos)
+        self.prev_final_nav_targ = copy.deepcopy(final_nav_targ)
 
         if self._sim.num_articulated_agents > 1:
             # This is very specific to SIRo. Careful merging
@@ -622,7 +682,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
             at_goal = (
                 dist_to_final_nav_targ < self._config.dist_thresh
                 and angle_to_obj < self._config.turn_thresh
-            )
+            ) or (self.at_goal_prev and dist_to_final_nav_targ < self._config.dist_thresh)
             print("at goal ", at_goal)
             print("dist_to_final_nav_targ", dist_to_final_nav_targ)
             print("angle_to_obj", angle_to_obj)
@@ -638,9 +698,10 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 # check if there is a collision caused by rotation
                 # if it does, we should block the rotation, and
                 # only move backward
-                need_move_backward = self.rotation_collision_check(
-                    cur_nav_targ,
-                )
+                need_move_backward = self.rotation_collision_check(cur_nav_targ,) 
+
+            #move_backward_col = False
+            move_backward_col = self.rotation_collision_check(cur_nav_targ,)  or self.forward_collision_check(cur_nav_targ)
 
             if need_move_backward:
                 # Backward direction
@@ -668,6 +729,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
             if self.motion_type == "base_velocity":
                 if not at_goal:
                     self.at_goal = False
+                    self.at_goal_prev = False
                     if dist_to_final_nav_targ < self._config.dist_thresh:
                         # Look at the object
                         vel = OracleNavAction._compute_turn(
@@ -682,10 +744,23 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                         vel = OracleNavAction._compute_turn(
                             rel_targ, self._config.turn_velocity, robot_forward
                         )
+                    # if move_backward_col:
+                    #     #just find an action that won't cause collision
+                    #     forward_col = self.virtual_collision_check([1, 0])
+                    #     right_col =
+                    #     #Tried to move forward 
+                    #     if vel == [self._config.forward_velocity, 0]:
+                            
+
                 else:
-                    self.at_goal = True
-                    self.skill_done = True
-                    vel = [0, 0]
+                    self.at_goal = False
+                    self.at_goal_prev = True
+                    # self.at_goal = True
+                    # self.skill_done = True
+                    # #vel = [0, 0]
+                    # #Turn 
+                    #breakpoint()
+                    vel = [0, self._config.turn_velocity]
 
                 if need_move_backward:
                     vel[0] = -1 * vel[0]
@@ -694,6 +769,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 if self._config.enable_lateral_move and len(vel)==2:
                     vel = [vel[0], 0, vel[1]]
                 #breakpoint()
+                print("vel was ", vel)
                 kwargs[f"{self._action_arg_prefix}base_vel"] = np.array(vel)
                 kwargs[f"{self._action_arg_prefix}tele"] = final_nav_targ #obj_targ_pos
                 return BaseVelNonCylinderAction.step(

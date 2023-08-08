@@ -445,6 +445,107 @@ def place_robot_at_closest_point(
     return agent_pos, desired_angle, False
 
 
+def _get_largest_island_idx(sim):
+    navigable_point = sim.pathfinder.get_random_navigable_point()
+    _navmesh_vertices = np.stack(
+        sim.pathfinder.build_navmesh_vertices(), axis=0
+    )
+    _island_sizes = [
+        sim.pathfinder.island_radius(p) for p in _navmesh_vertices
+    ]
+    _max_island_size = max(_island_sizes)
+    largest_size_vertex = _navmesh_vertices[
+        np.argmax(_island_sizes)
+    ]
+    _largest_island_idx = sim.pathfinder.get_island(
+        largest_size_vertex
+    )
+    return _largest_island_idx
+
+
+
+def place_robot_at_closest_point_for_sem_map(
+    target_position: np.ndarray,
+    sim,
+    agent: Optional[MobileManipulator] = None,
+):
+    """
+    Gets the agent's position and orientation at the closest point to the target position.
+    :return: The robot's start position, rotation, and whether the placement was a failure (True for failure, False for success).
+    """
+    if agent is None:
+        agent = sim.articulated_agent
+
+    island_idx = _get_largest_island_idx(sim)
+    agent_pos = sim.safe_snap_point_with_radius(agent.base_pos, island_idx, target_position, start_radius=0.5, end_radius=6.5, rad_delta=0.5) #sim.safe_snap_point_with_radius(island_idx, target_position, radius)
+    if not sim.is_point_within_bounds(target_position):
+        rearrange_logger.error(
+            f"Object {target_position} is out of bounds but trying to set robot position to {agent_pos}"
+        )
+    desired_angle = get_angle_to_pos(np.array(target_position - agent_pos))
+
+    return agent_pos, desired_angle, False
+
+
+def place_robot_at_closest_point_for_sem_map_with_navmesh(
+    target_position: np.ndarray,
+    sim,
+    navmesh_offset: Optional[List[Tuple[float, float]]] = None,
+    agent: Optional[MobileManipulator] = None,
+):
+    """
+    Gets the agent's position and orientation at the closest point to the target position.
+    :return: The robot's start position, rotation, and whether the placement was a failure (True for failure, False for success).
+    """
+    if agent is None:
+        agent = sim.articulated_agent
+
+    island_idx = _get_largest_island_idx(sim)
+    agent_pos = sim.safe_snap_point_with_radius(agent.base_pos, island_idx, target_position, start_radius=0.5, end_radius=6.5, rad_delta=0.5) #sim.safe_snap_point_with_radius(island_idx, target_position, radius)
+    if not sim.is_point_within_bounds(target_position):
+        rearrange_logger.error(
+            f"Object {target_position} is out of bounds but trying to set robot position to {agent_pos}"
+        )
+    desired_angle = get_angle_to_pos(np.array(target_position - agent_pos))
+
+    #breakpoint()
+    # Cache the initial location of the agent
+    cache_pos = agent.base_pos
+    # Make a copy of agent trans
+    trans = mn.Matrix4(agent.sim_obj.transformation)
+    # Set the base pos of the agent
+    trans.translation = agent_pos
+    # Project the nav pos
+    nav_pos_3d = [
+        np.array([xz[0], cache_pos[1], xz[1]]) for xz in navmesh_offset
+    ]
+    # Do transformation to get the location
+    center_pos_list = [trans.transform_point(xyz) for xyz in nav_pos_3d]
+
+    for center_pos in center_pos_list:
+        # Update the transformation of the agent
+        trans.translation = center_pos
+        cur_pos = [trans.transform_point(xyz) for xyz in nav_pos_3d]
+        # Project the height
+        cur_pos = [np.array([xz[0], cache_pos[1], xz[2]]) for xz in cur_pos]
+
+        is_collision = False
+
+        for pos in cur_pos:
+            if not sim.pathfinder.is_navigable(pos):
+                is_collision = True
+                break
+        #breakpoint()
+        if not is_collision:
+            return (
+                np.array(center_pos),
+                agent.base_rot,
+                False,
+            )
+
+    return agent_pos, desired_angle, False
+
+
 def place_robot_at_closest_point_with_navmesh(
     target_position: np.ndarray,
     sim,
