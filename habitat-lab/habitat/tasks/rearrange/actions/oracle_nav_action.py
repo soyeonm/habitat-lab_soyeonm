@@ -544,11 +544,12 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 else:
                     return {}
 
+        #Make human move
+        # if isinstance(nav_to_target_idx, np.ndarray) and nav_to_target_idx[0]==np.inf:
+        #     return
 
-        if isinstance(nav_to_target_idx, np.ndarray) and nav_to_target_idx[0]==np.inf:
-            return
-
-        else:
+        #else:
+        if 1==1:
             if isinstance(nav_to_target_idx, np.ndarray) and nav_to_target_idx[0] != np.inf and nav_to_target_idx.shape == (1,): #original
                 move_freely = False
             elif isinstance(nav_to_target_idx, np.ndarray) and nav_to_target_idx[0] != np.inf and nav_to_target_idx.shape == (3,): #move freely with ogn
@@ -703,15 +704,15 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
 
             # Planning to see if the robot needs to do back-up
             need_move_backward = False
-            if (
-                dist_to_final_nav_targ >= self._config.dist_thresh
-                and angle_to_target >= self._config.turn_thresh
-                and not at_goal
-            ):
-                # check if there is a collision caused by rotation
-                # if it does, we should block the rotation, and
-                # only move backward
-                need_move_backward = self.rotation_collision_check(cur_nav_targ,) 
+            # if (
+            #     dist_to_final_nav_targ >= self._config.dist_thresh
+            #     and angle_to_target >= self._config.turn_thresh
+            #     and not at_goal
+            # ):
+            #     # check if there is a collision caused by rotation
+            #     # if it does, we should block the rotation, and
+            #     # only move backward
+            #     need_move_backward = self.rotation_collision_check(cur_nav_targ,) 
 
             #move_backward_col = False
             #rot_col_check = self.rotation_collision_check(cur_nav_targ,)  
