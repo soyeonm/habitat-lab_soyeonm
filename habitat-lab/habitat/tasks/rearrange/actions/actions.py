@@ -665,12 +665,13 @@ class BaseVelNonCylinderAction(ArticulatedAgentAction):
         ):
             self.update_base(ang_vel != 0.0)
 
-        # if self._action_arg_prefix + "tele" in kwargs:
-        #     #breakpoint()
-        #     if ang_vel !=0.0:
-        #         self.cur_articulated_agent.base_pos = kwargs[
-        #                 self._action_arg_prefix + "tele"
-        #             ]
+        #if self._action_arg_prefix + "tele" in kwargs:
+            #breakpoint()
+            # if ang_vel !=0.0:
+            #     self.cur_articulated_agent.base_pos = kwargs[
+            #             self._action_arg_prefix + "tele"
+            #         ]
+                #self.cur_articulated_agent.base_pos = mn.Vector3([-7.86256298,  0.15955761, -2.78627963])
         if is_last_action:
             return self._sim.step(HabitatSimActions.base_velocity)
         else:
