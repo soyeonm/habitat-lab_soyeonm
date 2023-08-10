@@ -120,6 +120,8 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
         self.at_goal_prev = False
         self.last_vel = [0.0, 0.0, 0.0]
         self.timestep = 0
+        self.last_rot = None
+        self.forward_side_step_try = -1
 
     def _get_target_for_idx(self, nav_to_target_idx: int):
         nav_to_obj = self._poss_entities[nav_to_target_idx]
@@ -532,6 +534,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
     def step(self, *args, is_last_action, **kwargs):
         self.skill_done = False
         self.collided_rot = False
+        self.collided_for = False
         nav_to_target_idx = kwargs[
             self._action_arg_prefix + "oracle_nav_with_backing_up_action"
         ] #something like array([3.], dtype=float32) if original (not move freely, not human)
@@ -598,11 +601,17 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 final_nav_targ = np.array(final_nav_targ)
 
             robot_rot = float(self.cur_articulated_agent.base_rot)
+            robot_pos = np.array(self.cur_articulated_agent.base_pos)
             if self.timestep>=0:
                 # if self.timestep>=30:
                 #     breakpoint()
-                if self.last_vel[2] !=0.0 and abs(self.last_rot - robot_rot)<0.05: #was rotation and robot pos no change
+                if self.last_vel[0] >0 and np.linalg.norm(self.last_pos[[0,2]] - robot_pos[[0,2]])<=0.001:
+                    self.collided_for = True
+                    self.forward_side_step_try = 0
+                    #breakpoint()
+                elif self.last_vel[2] !=0.0 and abs(self.last_rot - robot_rot)<0.05: #was rotation and robot pos no change
                     self.collided_rot = True
+                
 
         else:
             nav_to_target_idx = int(nav_to_target_idx[0]) - 1
@@ -618,6 +627,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         robot_pos = np.array(self.cur_articulated_agent.base_pos)
         robot_rot = float(self.cur_articulated_agent.base_rot)
         self.last_rot = robot_rot
+        self.last_pos = robot_pos
 
         print("robot_pos",robot_pos)
         print("obj_targ_pos", obj_targ_pos)
@@ -745,8 +755,15 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 if not at_goal:
                     self.at_goal = False
                     self.at_goal_prev = False
-
-                    if self.collided_rot:
+                    if self.collided_for or self.forward_side_step_try>=1: #side step in the direction that makes sense
+                        if self.forward_side_step_try ==0:
+                            vel = [0, self._config.forward_velocity, 0]
+                            self.forward_side_step_try +=1
+                        elif self.forward_side_step_try ==1:
+                            vel = [0, -self._config.forward_velocity, 0]
+                            self.forward_side_step_try = -1
+                        #breakpoint()
+                    elif self.collided_rot:
                         #vel = -1. * self.last_vel
                         if self.last_vel[2] >0 : #if rotated left in the last vel, do lateral right
                             vel = [0, self._config.forward_velocity, 0] #[0, -self._config.turn_velocity]
