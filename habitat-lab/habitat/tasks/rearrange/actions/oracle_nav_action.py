@@ -548,11 +548,10 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                     return {}
 
         #Make human move
-        # if isinstance(nav_to_target_idx, np.ndarray) and nav_to_target_idx[0]==np.inf:
-        #     return
+        if isinstance(nav_to_target_idx, np.ndarray) and nav_to_target_idx[0]==np.inf:
+            return
 
-        #else:
-        if 1==1:
+        else:
             if isinstance(nav_to_target_idx, np.ndarray) and nav_to_target_idx[0] != np.inf and nav_to_target_idx.shape == (1,): #original
                 move_freely = False
             elif isinstance(nav_to_target_idx, np.ndarray) and nav_to_target_idx[0] != np.inf and nav_to_target_idx.shape == (3,): #move freely with ogn
