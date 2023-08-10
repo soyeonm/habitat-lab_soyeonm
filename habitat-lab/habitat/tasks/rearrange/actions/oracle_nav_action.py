@@ -756,12 +756,13 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                     self.at_goal = False
                     self.at_goal_prev = False
                     if self.collided_for or self.forward_side_step_try>=1: #side step in the direction that makes sense
-                        if self.forward_side_step_try ==0:
-                            vel = [0, 2*self._config.forward_velocity, 0]
-                            self.forward_side_step_try +=1
-                        elif self.forward_side_step_try ==1:
-                            vel = [0, -2*self._config.forward_velocity, 0]
-                            self.forward_side_step_try = -1
+                        #if self.forward_side_step_try ==0:
+                        vel = [0, 0, 0]
+                        #self.forward_side_step_try +=1
+                        self.cur_articulated_agent.base_pos = cur_nav_targ
+                        # elif self.forward_side_step_try ==1:
+                        #     vel = [0, 0, 0]
+                        #     self.forward_side_step_try = -1
                         #breakpoint()
                     elif self.collided_rot:
                         #vel = -1. * self.last_vel
