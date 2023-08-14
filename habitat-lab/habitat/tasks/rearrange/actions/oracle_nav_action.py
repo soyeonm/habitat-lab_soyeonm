@@ -535,6 +535,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         self.skill_done = False
         self.collided_rot = False
         self.collided_for = False
+        self.collided_lat = False
         nav_to_target_idx = kwargs[
             self._action_arg_prefix + "oracle_nav_with_backing_up_action"
         ] #something like array([3.], dtype=float32) if original (not move freely, not human)
@@ -610,6 +611,8 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                     #breakpoint()
                 elif self.last_vel[2] !=0.0 and abs(self.last_rot - robot_rot)<0.05: #was rotation and robot pos no change
                     self.collided_rot = True
+                elif self.last_vel[1] != 0.0 and np.linalg.norm(self.last_pos[[0,2]] - robot_pos[[0,2]])<=0.001:
+                    self.collided_lat = True
                 
 
         else:
@@ -769,6 +772,12 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                             vel = [0, self._config.forward_velocity, 0] #[0, -self._config.turn_velocity]
                         else:  # lateral left
                             vel = [0, -self._config.forward_velocity, 0]
+                    elif self.collided_lat:
+                        #move backward and lateral at the same time
+                        #vel = [-self._config.forward_velocity, self.last_vel[1], 0]
+                        vel = [0, 0, 0]
+                        #self.forward_side_step_try +=1
+                        self.cur_articulated_agent.base_pos = cur_nav_targ
                     elif dist_to_final_nav_targ < self._config.dist_thresh:
                         # Look at the object
                         vel = OracleNavAction._compute_turn(
