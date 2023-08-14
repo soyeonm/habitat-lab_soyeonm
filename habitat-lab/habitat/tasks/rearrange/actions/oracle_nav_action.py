@@ -801,8 +801,8 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                     #breakpoint()
                     vel = [0, self._config.turn_velocity]
 
-                if need_move_backward:
-                    vel[0] = -1 * vel[0]
+                # if need_move_backward:
+                #     vel[0] = -1 * vel[0]
 
                 #For reading action sequences
                 if self._config.enable_lateral_move and len(vel)==2:
