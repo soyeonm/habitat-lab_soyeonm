@@ -23,6 +23,10 @@ if TYPE_CHECKING:
 import pickle
 import os
 import numpy as np
+import habitat_sim
+
+#from habitat.datasets.rearrange.navmesh_utils import get_largest_island_index
+from habitat.tiffany_utils.navmesh_utils import get_largest_island_index #*
 
 class Action:
     r"""
@@ -378,24 +382,31 @@ class EmbodiedTask:
 
         #return id2handle_dict
 
+
+
+
     def place_agent(self, agent_idx):
         (_,articulated_agent_rot,) = self._sim.set_articulated_agent_base_to_random_point(agent_idx=agent_idx)
 
         #Copied from https://github.com/soyeonm/habitat-lab_soyeonm/blob/my_changes_SIRo_socnav_latest/habitat-lab/habitat/tasks/rearrange/actions/oracle_nav_action.py
-        navigable_point = self._sim.pathfinder.get_random_navigable_point()
-        _navmesh_vertices = np.stack(
-            self._sim.pathfinder.build_navmesh_vertices(), axis=0
-        )
-        _island_sizes = [
-            self._sim.pathfinder.island_radius(p) for p in _navmesh_vertices
-        ]
-        _max_island_size = max(_island_sizes)
-        largest_size_vertex = _navmesh_vertices[
-            np.argmax(_island_sizes)
-        ]
-        _largest_island_idx = self._sim.pathfinder.get_island(
-            largest_size_vertex
-        )
+        # navigable_point = self._sim.pathfinder.get_random_navigable_point()
+        # _navmesh_vertices = np.stack(
+        #     self._sim.pathfinder.build_navmesh_vertices(), axis=0
+        # )
+        # _island_sizes = [
+        #     self._sim.pathfinder.island_radius(p) for p in _navmesh_vertices
+        # ]
+        # _max_island_size = max(_island_sizes)
+        # largest_size_vertex = _navmesh_vertices[
+        #     np.argmax(_island_sizes)
+        # ]
+        # _largest_island_idx = self._sim.pathfinder.get_island(
+        #     largest_size_vertex
+        # )
+        _largest_island_idx = get_largest_island_index(
+                self._sim.pathfinder, self._sim, allow_outdoor=False
+            )
+        print("largest idx is ", _largest_island_idx)
 
         start_pos = self._sim.pathfinder.get_random_navigable_point(
                 island_index=_largest_island_idx
@@ -427,17 +438,17 @@ class EmbodiedTask:
                     panoptic = self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_1_head_panoptic"]
 
                     sample_times = 0
-                    while not(self.any_target_1_visible_gt(panoptic)) and sample_times <100:
-                        (start_pos,articulated_agent_rot,) = self._sim.set_articulated_agent_base_to_random_point(agent_idx=agent_idx)
-                        # start_pos = self._sim.pathfinder.get_random_navigable_point(
-                        # island_index=_largest_island_idx)
-                        articulated_agent = self._sim.get_agent_data(agent_idx).articulated_agent
-                        articulated_agent.base_pos = start_pos #articulated_agent_pos
-                        articulated_agent.base_rot = articulated_agent_rot
-                        self._sim.maybe_update_articulated_agent()
-                        panoptic = self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_1_head_panoptic"]
-                        #print("sampling a new pose!")
-                        sample_times +=1
+                    #while not(self.any_target_1_visible_gt(panoptic)) and sample_times <100:
+                    (start_pos,articulated_agent_rot,) = self._sim.set_articulated_agent_base_to_random_point(agent_idx=agent_idx)
+                    start_pos = self._sim.pathfinder.get_random_navigable_point(
+                    island_index=_largest_island_idx)
+                    articulated_agent = self._sim.get_agent_data(agent_idx).articulated_agent
+                    articulated_agent.base_pos = start_pos #articulated_agent_pos
+                    articulated_agent.base_rot = articulated_agent_rot
+                    self._sim.maybe_update_articulated_agent()
+                    panoptic = self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_1_head_panoptic"]
+                    #print("sampling a new pose!")
+                    sample_times +=1
                     if sample_times == 100:
                         while np.linalg.norm((start_pos - self._sim.get_scene_pos()[1])[[0, 2]]) >=2.5:
                             start_pos = self._sim.pathfinder.get_random_navigable_point(
@@ -454,24 +465,29 @@ class EmbodiedTask:
                     #Now spot
                     agent_idx = 0
                     #teleport agent 0 
-                    self.place_agent(agent_idx)
+                    _largest_island_idx = self.place_agent(agent_idx)
                     
                     #Make sure that the agent 0 sees the human and the target 1
                     panoptic = self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_0_articulated_agent_arm_panoptic"]
 
                     sample_times = 0
-                    while not(self.human_visible_gt(panoptic) and self.any_target_1_visible_gt(panoptic)) and sample_times <100:
-                        (start_pos,articulated_agent_rot,) = self._sim.set_articulated_agent_base_to_random_point(agent_idx=agent_idx)
-                        # start_pos = self._sim.pathfinder.get_random_navigable_point(
-                        # island_index=_largest_island_idx)
-                        articulated_agent = self._sim.get_agent_data(agent_idx).articulated_agent
-                        articulated_agent.base_pos = start_pos #articulated_agent_pos
-                        articulated_agent.base_rot = articulated_agent_rot
-                        self._sim.maybe_update_articulated_agent()
-                        panoptic = self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_0_articulated_agent_arm_panoptic"]
-                        #print("sampling a new pose!")
-                        sample_times +=1
-                        #breakpoint()
+                    (start_pos,articulated_agent_rot,) = self._sim.set_articulated_agent_base_to_random_point(agent_idx=agent_idx)
+                    start_pos = self._sim.pathfinder.get_random_navigable_point(
+                    island_index=_largest_island_idx)
+                    articulated_agent = self._sim.get_agent_data(agent_idx).articulated_agent
+                    articulated_agent.base_pos = start_pos #articulated_agent_pos
+                    articulated_agent.base_rot = articulated_agent_rot
+                    self._sim.maybe_update_articulated_agent()
+                    #breakpoint()
+                    #Let's put a loop and see
+                    #start_pos = self._sim.pathfinder.get_random_navigable_point(island_index=_largest_island_idx); articulated_agent.base_pos = start_pos; self._sim.maybe_update_articulated_agent(); cv2.imwrite('/Users/soyeonm/Documents/agent_0_third.png', self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_0_third_rgb"])
+
+
+                    self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_0_articulated_agent_arm_rgb"]
+                    panoptic = self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())["agent_0_articulated_agent_arm_panoptic"]
+                    #print("sampling a new pose!")
+                    sample_times +=1
+                    #breakpoint()
                 
                     if sample_times == 100:
                         self.agent_0_placement_success = False

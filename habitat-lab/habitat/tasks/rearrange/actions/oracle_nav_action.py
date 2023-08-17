@@ -546,6 +546,12 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                         vel = OracleNavAction._compute_turn(
                             rel_targ, self._config.turn_velocity, robot_forward
                         )
+                    #vel = [0,0]
+                    #breakpoint()
+                    #self.cur_articulated_agent.base_pos = cur_nav_targ
+                    print("agent pos ", self.cur_articulated_agent.base_pos)
+                    print("cur_nav_targ ", cur_nav_targ)
+
                 else:
                     self.at_goal = True
                     self.skill_done = True
@@ -554,6 +560,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 if need_move_backward:
                     vel[0] = -1 * vel[0]
 
+                print("vel is ", vel)
                 kwargs[f"{self._action_arg_prefix}base_vel"] = np.array(vel)
                 return BaseVelNonCylinderAction.step(
                     self, *args, is_last_action=is_last_action, **kwargs
