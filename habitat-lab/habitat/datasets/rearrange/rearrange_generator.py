@@ -75,6 +75,7 @@ class RearrangeEpisodeGenerator:
         cfg: DictConfig,
         debug_visualization: bool = False,
         limit_scene_set: Optional[str] = None,
+        num_episodes: int = 1,
     ) -> None:
         """
         Initialize the generator object for a particular configuration.
@@ -98,7 +99,7 @@ class RearrangeEpisodeGenerator:
 
         # Setup the sampler caches from config
         self._get_resource_sets()
-        self._get_scene_sampler()
+        self._get_scene_sampler(num_episodes)
         self._get_obj_samplers()
         self._get_ao_state_samplers()
 
@@ -281,7 +282,7 @@ class RearrangeEpisodeGenerator:
                 )
                 raise (NotImplementedError)
 
-    def _get_scene_sampler(self) -> None:
+    def _get_scene_sampler(self, num_episodes: int) -> None:
         """
         Initialize the scene sampler.
         """
@@ -290,7 +291,7 @@ class RearrangeEpisodeGenerator:
             self._scene_sampler = samplers.SingleSceneSampler(
                 self.cfg.scene_sampler.params.scene
             )
-        elif self.cfg.scene_sampler.type == "subset":
+        elif self.cfg.scene_sampler.type in ["subset", "scene_balanced"]: 
             unified_scene_set: List[str] = []
             # concatenate all requested scene sets
             for set_name in self.cfg.scene_sampler.params.scene_sets:
@@ -306,7 +307,15 @@ class RearrangeEpisodeGenerator:
 
             # cull duplicates
             unified_scene_set = sorted(set(unified_scene_set))
-            self._scene_sampler = samplers.MultiSceneSampler(unified_scene_set)
+            #self._scene_sampler = samplers.MultiSceneSampler(unified_scene_set)
+            if self.cfg.scene_sampler.type == "subset":
+                self._scene_sampler = samplers.MultiSceneSampler(
+                    unified_scene_set
+                )
+            elif self.cfg.scene_sampler.type == "scene_balanced":
+                self._scene_sampler = samplers.BalancedSceneSampler(
+                    unified_scene_set, num_episodes
+                )
         else:
             logger.error(
                 f"Requested scene sampler '{self.cfg.scene_sampler.type}' is not implemented."
@@ -430,10 +439,11 @@ class RearrangeEpisodeGenerator:
             pbar = tqdm(total=num_episodes)
         while len(generated_episodes) < num_episodes:
             #new_episode = self.generate_single_episode()
-            try:
-                new_episode = self.generate_single_episode()
-            except:
-                new_episode = None
+            #try:
+            self._scene_sampler.set_cur_episode(len(generated_episodes))
+            new_episode = self.generate_single_episode()
+            # except:
+            #     new_episode = None
             if new_episode is None:
                 failed_episodes += 1
                 continue
