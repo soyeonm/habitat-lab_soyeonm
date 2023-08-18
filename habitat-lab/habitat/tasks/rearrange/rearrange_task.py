@@ -26,6 +26,7 @@ from habitat.tasks.rearrange.utils import (
 )
 import os
 import pickle
+from habitat.tiffany_utils.navmesh_utils import get_largest_island_index
 
 
 @registry.register_task(name="RearrangeEmptyTask-v0")
@@ -173,20 +174,21 @@ class RearrangeTask(NavigationTask):
             (_,articulated_agent_rot,) = self._sim.set_articulated_agent_base_to_random_point(agent_idx=agent_idx)
 
             #Copied from https://github.com/soyeonm/habitat-lab_soyeonm/blob/my_changes_SIRo_socnav_latest/habitat-lab/habitat/tasks/rearrange/actions/oracle_nav_action.py
-            navigable_point = self._sim.pathfinder.get_random_navigable_point()
-            _navmesh_vertices = np.stack(
-                self._sim.pathfinder.build_navmesh_vertices(), axis=0
-            )
-            _island_sizes = [
-                self._sim.pathfinder.island_radius(p) for p in _navmesh_vertices
-            ]
-            _max_island_size = max(_island_sizes)
-            largest_size_vertex = _navmesh_vertices[
-                np.argmax(_island_sizes)
-            ]
-            _largest_island_idx = self._sim.pathfinder.get_island(
-                largest_size_vertex
-            )
+            # navigable_point = self._sim.pathfinder.get_random_navigable_point()
+            # _navmesh_vertices = np.stack(
+            #     self._sim.pathfinder.build_navmesh_vertices(), axis=0
+            # )
+            # _island_sizes = [
+            #     self._sim.pathfinder.island_radius(p) for p in _navmesh_vertices
+            # ]
+            # _max_island_size = max(_island_sizes)
+            # largest_size_vertex = _navmesh_vertices[
+            #     np.argmax(_island_sizes)
+            # ]
+            # _largest_island_idx = self._sim.pathfinder.get_island(
+            #     largest_size_vertex
+            # )
+            _largest_island_idx = get_largest_island_index(self._sim.pathfinder, self._sim, allow_outdoor=False)
 
             start_pos = self._sim.pathfinder.get_random_navigable_point(
                     island_index=_largest_island_idx

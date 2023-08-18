@@ -57,6 +57,7 @@ from habitat_sim.utils.common import quat_from_magnum
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig
+from habitat.tiffany_utils.navmesh_utils import get_largest_island_index
 
 
 @registry.register_simulator(name="RearrangeSim-v0")
@@ -369,7 +370,9 @@ class RearrangeSim(HabitatSim):
         articulated_agent = self.get_agent_data(agent_idx).articulated_agent
 
         for attempt_i in range(max_attempts):
-            start_pos = self.pathfinder.get_random_navigable_point()
+            #start_pos = self.pathfinder.get_random_navigable_point()
+            _largest_island_idx = get_largest_island_index(self.pathfinder, self, allow_outdoor=False)
+            start_pos = self.pathfinder.get_random_navigable_point(island_index=_largest_island_idx)
 
             start_pos = self.safe_snap_point(start_pos)
             start_rot = np.random.uniform(0, 2 * np.pi)
@@ -500,20 +503,22 @@ class RearrangeSim(HabitatSim):
         """
         snap_point can return nan which produces hard to catch errors.
         """
-        new_pos = self.pathfinder.snap_point(pos)
-        island_radius = self.pathfinder.island_radius(new_pos)
+        # new_pos = self.pathfinder.snap_point(pos)
+        # island_radius = self.pathfinder.island_radius(new_pos)
+        _largest_island_idx = get_largest_island_index(self.pathfinder, self, allow_outdoor=False)
+        new_pos = self.pathfinder.snap_point(pos, island_index=_largest_island_idx)
 
-        if np.isnan(new_pos[0]) or island_radius != self._max_island_size:
+        if np.isnan(new_pos[0]): #or island_radius != self._max_island_size:
             # The point is not valid or not in a different island. Find a
             # different point nearby that is on a different island and is
             # valid.
             #breakpoint()
             new_pos = self.pathfinder.get_random_navigable_point_near(
-                pos, 1.5, 1000
+                pos, 1.5, 1000, island_index=_largest_island_idx
             )
-            island_radius = self.pathfinder.island_radius(new_pos)
+            #island_radius = self.pathfinder.island_radius(new_pos)
 
-        if np.isnan(new_pos[0]) or island_radius != self._max_island_size:
+        if np.isnan(new_pos[0]): # or island_radius != self._max_island_size:
             # This is a last resort, take a navmesh vertex that is closest
             use_verts = [
                 x
