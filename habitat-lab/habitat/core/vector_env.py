@@ -419,7 +419,10 @@ class VectorEnv:
         :param action: action to be taken
         :return: list containing the output of step method of indexed env.
         """
+        print("action is ", action)
+        breakpoint()
         self.async_step_at(index_env, action)
+
         return self.wait_step_at(index_env)
 
     def async_step(self, data: Sequence[Union[int, np.ndarray]]) -> None:
@@ -448,6 +451,7 @@ class VectorEnv:
             :py:`[1, 3 ,5 , ...]`.
         :return: list of outputs from the step method of envs.
         """
+        #print("data is ", data)
         self.async_step(data)
         return self.wait_step()
 

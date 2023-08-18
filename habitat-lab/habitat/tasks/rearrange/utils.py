@@ -21,6 +21,7 @@ from habitat.articulated_agents.mobile_manipulator import MobileManipulator
 from habitat.core.logging import HabitatLogger
 from habitat.tasks.utils import get_angle
 from habitat_sim.physics import MotionType
+from habitat.tiffany_utils.navmesh_utils import get_largest_island_index
 
 rearrange_logger = HabitatLogger(
     name="rearrange_task",
@@ -532,11 +533,13 @@ def get_robot_spawns(
     if agent is None:
         agent = sim.articulated_agent
 
+
+    _largest_island_idx = get_largest_island_index(sim.pathfinder, sim, allow_outdoor=False)
     # Try to place the robot.
     for _ in range(num_spawn_attempts):
         sim.set_state(state)
         start_position = sim.pathfinder.get_random_navigable_point_near(
-            target_position, distance_threshold
+            target_position, distance_threshold, island_index=_largest_island_idx
         )
 
         # It is found that get_random_navigable_point_near() occasionally returns
