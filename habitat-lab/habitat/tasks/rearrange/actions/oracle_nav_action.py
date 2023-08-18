@@ -324,7 +324,7 @@ class SimpleVelocityControlEnv:
 
 
 @registry.register_task_action
-class OracleNavWithBackingUpAction(BaseVelAction, OracleNavAction):  # type: ignore
+class OracleNavWithBackingUpAction(OracleNavAction):  # type: ignore
     """
     Oracle nav action with backing-up. This function allows the robot to move
     backward to avoid obstacles.
