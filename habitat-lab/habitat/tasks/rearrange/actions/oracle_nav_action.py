@@ -324,7 +324,7 @@ class SimpleVelocityControlEnv:
 
 
 @registry.register_task_action
-class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  # type: ignore
+class OracleNavWithBackingUpAction(BaseVelAction, OracleNavAction):  # type: ignore
     """
     Oracle nav action with backing-up. This function allows the robot to move
     backward to avoid obstacles.
@@ -333,7 +333,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
     def __init__(self, *args, task, **kwargs):
         OracleNavAction.__init__(self, *args, task=task, **kwargs)
         if self.motion_type == "base_velocity":
-            BaseVelNonCylinderAction.__init__(self, *args, **kwargs, task=task)
+            BaseVelAction.__init__(self, *args, **kwargs, task=task)
 
         # Define the navigation target
         self.at_goal = False
@@ -548,7 +548,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                     vel[0] = -1 * vel[0]
 
                 kwargs[f"{self._action_arg_prefix}base_vel"] = np.array(vel)
-                return BaseVelNonCylinderAction.step(
+                return BaseVelAction.step(
                     self, *args, is_last_action=is_last_action, **kwargs
                 )
 
