@@ -447,23 +447,6 @@ def place_robot_at_closest_point(
     return agent_pos, desired_angle, False
 
 
-def _get_largest_island_idx(sim):
-    navigable_point = sim.pathfinder.get_random_navigable_point()
-    _navmesh_vertices = np.stack(
-        sim.pathfinder.build_navmesh_vertices(), axis=0
-    )
-    _island_sizes = [
-        sim.pathfinder.island_radius(p) for p in _navmesh_vertices
-    ]
-    _max_island_size = max(_island_sizes)
-    largest_size_vertex = _navmesh_vertices[
-        np.argmax(_island_sizes)
-    ]
-    _largest_island_idx = sim.pathfinder.get_island(
-        largest_size_vertex
-    )
-    return _largest_island_idx
-
 
 
 def place_robot_at_closest_point_for_sem_map(
@@ -478,7 +461,7 @@ def place_robot_at_closest_point_for_sem_map(
     if agent is None:
         agent = sim.articulated_agent
 
-    island_idx = _get_largest_island_idx(sim)
+    island_idx = get_largest_island_index(sim.pathfinder, sim, allow_outdoor=False)
     agent_pos = sim.safe_snap_point_with_radius(agent.base_pos, island_idx, target_position, start_radius=0.5, end_radius=6.5, rad_delta=0.5) #sim.safe_snap_point_with_radius(island_idx, target_position, radius)
     if not sim.is_point_within_bounds(target_position):
         rearrange_logger.error(
@@ -502,7 +485,7 @@ def place_robot_at_closest_point_for_sem_map_with_navmesh(
     if agent is None:
         agent = sim.articulated_agent
 
-    island_idx = _get_largest_island_idx(sim)
+    island_idx = get_largest_island_index(sim.pathfinder, sim, allow_outdoor=False)
     agent_pos = sim.safe_snap_point_with_radius(agent.base_pos, island_idx, target_position, start_radius=0.5, end_radius=6.5, rad_delta=0.5) #sim.safe_snap_point_with_radius(island_idx, target_position, radius)
     if not sim.is_point_within_bounds(target_position):
         rearrange_logger.error(
