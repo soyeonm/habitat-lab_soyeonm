@@ -593,11 +593,20 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 final_nav_targ = self.prev_final_nav_targ
             else:
                 final_nav_targ = obj_targ_pos
-                while not(self.found_path(final_nav_targ)):
+                counter = 0
+                found_path = self.found_path(final_nav_targ)
+                while not(found_path):
                     # final_nav_targ, _, _ = place_robot_at_closest_point(
                     # obj_targ_pos, self._sim, agent=self.cur_articulated_agent)
                     #final_nav_targ, _, _ = place_robot_at_closest_point_for_sem_map(obj_targ_pos, self._sim, agent=self.cur_articulated_agent)
                     final_nav_targ, _, _ = place_robot_at_closest_point_for_sem_map_with_navmesh(obj_targ_pos, self._sim, self._navmesh_offset_for_agent_placement,agent=self.cur_articulated_agent)
+                    counter +=1
+                    found_path = self.found_path(final_nav_targ)
+                    if counter >20:
+                        breakpoint()
+                        #self.cur_articulated_agent.base_pos = obj_targ_pos
+                        #final_nav_targ = obj_targ_pos
+                        #found_path = True
                 # place_robot_at_closest_point_with_navmesh(
                 final_nav_targ = np.array(final_nav_targ)
             print("Placed!")
