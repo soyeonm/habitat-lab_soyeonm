@@ -25,8 +25,8 @@ from habitat.tasks.utils import cartesian_to_polar
 import os
 import pickle
 
-from habitat.tiffany_utils.detic_helper import setup_cfg, detic_args
-from habitat.tiffany_utils.detic_predictor import VisualizationDemo
+# from habitat.tiffany_utils.detic_helper import setup_cfg, detic_args
+# from habitat.tiffany_utils.detic_predictor import VisualizationDemo
 
 import torch
 

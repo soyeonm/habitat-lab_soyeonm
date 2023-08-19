@@ -588,6 +588,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
             #     )
             #Replace to just sample until 
             #don't replan!
+            #breakpoint()
             if np.linalg.norm((obj_targ_pos - self.prev_obj_targ_pos)[[0, 2]])<=0.1: 
                 final_nav_targ = self.prev_final_nav_targ
             else:
@@ -599,6 +600,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                     final_nav_targ, _, _ = place_robot_at_closest_point_for_sem_map_with_navmesh(obj_targ_pos, self._sim, self._navmesh_offset_for_agent_placement,agent=self.cur_articulated_agent)
                 # place_robot_at_closest_point_with_navmesh(
                 final_nav_targ = np.array(final_nav_targ)
+            print("Placed!")
 
             robot_rot = float(self.cur_articulated_agent.base_rot)
             robot_pos = np.array(self.cur_articulated_agent.base_pos)
