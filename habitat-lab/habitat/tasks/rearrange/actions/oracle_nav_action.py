@@ -21,6 +21,8 @@ from habitat.tasks.utils import get_angle
 from habitat_sim.physics import VelocityControl
 import copy
 
+from habitat.tiffany_utils.navmesh_utils import get_largest_island_index
+
 
 @registry.register_task_action
 class OracleNavAction(BaseVelAction, HumanoidJointAction):
@@ -602,8 +604,14 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                     final_nav_targ, _, _ = place_robot_at_closest_point_for_sem_map_with_navmesh(obj_targ_pos, self._sim, self._navmesh_offset_for_agent_placement,agent=self.cur_articulated_agent)
                     counter +=1
                     found_path = self.found_path(final_nav_targ)
-                    if counter >20:
-                        breakpoint()
+                    if counter >20 and self.timestep==0:
+                        #breakpoint()
+                        #just sample again
+                        _largest_island_idx = get_largest_island_index(
+                            self._sim.pathfinder, self._sim, allow_outdoor=False
+                        )
+                        start_pos0 = self._sim.pathfinder.get_random_navigable_point(island_index=_largest_island_idx)
+                        self.cur_articulated_agent.base_pos = start_pos0
                         #self.cur_articulated_agent.base_pos = obj_targ_pos
                         #final_nav_targ = obj_targ_pos
                         #found_path = True
