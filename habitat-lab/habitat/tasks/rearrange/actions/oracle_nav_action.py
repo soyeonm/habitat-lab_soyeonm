@@ -607,11 +607,11 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                     if counter >10 and self.timestep==0:
                         #breakpoint()
                         #just sample again
-                        _largest_island_idx = get_largest_island_index(
-                            self._sim.pathfinder, self._sim, allow_outdoor=False
-                        )
-                        start_pos0 = self._sim.pathfinder.get_random_navigable_point(island_index=_largest_island_idx)
-                        self.cur_articulated_agent.base_pos = start_pos0
+                        # _largest_island_idx = get_largest_island_index(
+                        #     self._sim.pathfinder, self._sim, allow_outdoor=False
+                        # )
+                        # start_pos0 = self._sim.pathfinder.get_random_navigable_point(island_index=_largest_island_idx)
+                        # self.cur_articulated_agent.base_pos = start_pos0
                         breakpoint()
                         #return
                         #counter = 0
