@@ -612,8 +612,11 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                         # )
                         # start_pos0 = self._sim.pathfinder.get_random_navigable_point(island_index=_largest_island_idx)
                         # self.cur_articulated_agent.base_pos = start_pos0
-                        breakpoint()
-                        self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())
+                        #breakpoint()
+                        #self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())
+                        #self.failed_init = True
+                        self.cur_articulated_agent.base_pos = np.array([0.0, 0.0, 0.0])
+                        return 
                         #return
                         #counter = 0
                         #self.cur_articulated_agent.base_pos = obj_targ_pos
