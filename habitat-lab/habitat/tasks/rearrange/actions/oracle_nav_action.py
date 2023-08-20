@@ -124,6 +124,7 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
         self.timestep = 0
         self.last_rot = None
         self.forward_side_step_try = -1
+        self.spot_init_failed = False
 
     def _get_target_for_idx(self, nav_to_target_idx: int):
         nav_to_obj = self._poss_entities[nav_to_target_idx]
@@ -615,8 +616,9 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                         #breakpoint()
                         #self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())
                         #self.failed_init = True
-                        self.cur_articulated_agent.base_pos = np.array([0.0, 0.0, 0.0])
-                        return 
+                        #self.cur_articulated_agent.base_pos = np.array([0.0, 0.0, 0.0])
+                        #return 
+                        self.spot_init_failed = True
                         #return
                         #counter = 0
                         #self.cur_articulated_agent.base_pos = obj_targ_pos
@@ -838,10 +840,15 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
 
                 # if need_move_backward:
                 #     vel[0] = -1 * vel[0]
+                if self.spot_init_failed:
+                    vel = [0,0,0]
+                    self.cur_articulated_agent.base_pos = np.array([0.0, 0.0, 0.0])
 
                 #For reading action sequences
                 if self._config.enable_lateral_move and len(vel)==2:
                     vel = [vel[0], 0, vel[1]]
+
+
                 # if self.timestep >=30:
                 #     breakpoint()
                 self.last_vel = vel
