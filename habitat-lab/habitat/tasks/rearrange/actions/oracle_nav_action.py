@@ -619,6 +619,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                             #self.failed_init = True
                             #self.cur_articulated_agent.base_pos = np.array([0.0, 0.0, 0.0])
                             #return 
+                            found_path=True
                             self.spot_init_failed = True
                             #return
                             #counter = 0
