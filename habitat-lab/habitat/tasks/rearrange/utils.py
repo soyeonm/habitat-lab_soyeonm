@@ -467,6 +467,7 @@ def place_robot_at_closest_point_for_sem_map(
         rearrange_logger.error(
             f"Object {target_position} is out of bounds but trying to set robot position to {agent_pos}"
         )
+        breakpoint()
     desired_angle = get_angle_to_pos(np.array(target_position - agent_pos))
 
     return agent_pos, desired_angle, False

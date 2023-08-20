@@ -625,6 +625,8 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                             #self.cur_articulated_agent.base_pos = obj_targ_pos
                             #final_nav_targ = obj_targ_pos
                             #found_path = True
+                        if counter >20 and self.timestep>0:
+                            breakpoint()
                 # place_robot_at_closest_point_with_navmesh(
                 final_nav_targ = np.array(final_nav_targ)
             print("Placed!")
