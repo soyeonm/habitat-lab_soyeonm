@@ -598,32 +598,33 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 final_nav_targ = obj_targ_pos
                 counter = 0
                 found_path = self.found_path(final_nav_targ)
-                while not(found_path):
-                    # final_nav_targ, _, _ = place_robot_at_closest_point(
-                    # obj_targ_pos, self._sim, agent=self.cur_articulated_agent)
-                    #final_nav_targ, _, _ = place_robot_at_closest_point_for_sem_map(obj_targ_pos, self._sim, agent=self.cur_articulated_agent)
-                    final_nav_targ, _, _ = place_robot_at_closest_point_for_sem_map_with_navmesh(obj_targ_pos, self._sim, self._navmesh_offset_for_agent_placement,agent=self.cur_articulated_agent)
-                    counter +=1
-                    found_path = self.found_path(final_nav_targ)
-                    if counter >20 and self.timestep==0:
-                        #breakpoint()
-                        #just sample again
-                        # _largest_island_idx = get_largest_island_index(
-                        #     self._sim.pathfinder, self._sim, allow_outdoor=False
-                        # )
-                        # start_pos0 = self._sim.pathfinder.get_random_navigable_point(island_index=_largest_island_idx)
-                        # self.cur_articulated_agent.base_pos = start_pos0
-                        #breakpoint()
-                        #self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())
-                        #self.failed_init = True
-                        #self.cur_articulated_agent.base_pos = np.array([0.0, 0.0, 0.0])
-                        #return 
-                        self.spot_init_failed = True
-                        #return
-                        #counter = 0
-                        #self.cur_articulated_agent.base_pos = obj_targ_pos
-                        #final_nav_targ = obj_targ_pos
-                        #found_path = True
+                if not(self.spot_init_failed):
+                    while not(found_path):
+                        # final_nav_targ, _, _ = place_robot_at_closest_point(
+                        # obj_targ_pos, self._sim, agent=self.cur_articulated_agent)
+                        #final_nav_targ, _, _ = place_robot_at_closest_point_for_sem_map(obj_targ_pos, self._sim, agent=self.cur_articulated_agent)
+                        final_nav_targ, _, _ = place_robot_at_closest_point_for_sem_map_with_navmesh(obj_targ_pos, self._sim, self._navmesh_offset_for_agent_placement,agent=self.cur_articulated_agent)
+                        counter +=1
+                        found_path = self.found_path(final_nav_targ)
+                        if counter >20 and self.timestep==0:
+                            #breakpoint()
+                            #just sample again
+                            # _largest_island_idx = get_largest_island_index(
+                            #     self._sim.pathfinder, self._sim, allow_outdoor=False
+                            # )
+                            # start_pos0 = self._sim.pathfinder.get_random_navigable_point(island_index=_largest_island_idx)
+                            # self.cur_articulated_agent.base_pos = start_pos0
+                            #breakpoint()
+                            #self._sim._sensor_suite.get_observations(self._sim.get_sensor_observations())
+                            #self.failed_init = True
+                            #self.cur_articulated_agent.base_pos = np.array([0.0, 0.0, 0.0])
+                            #return 
+                            self.spot_init_failed = True
+                            #return
+                            #counter = 0
+                            #self.cur_articulated_agent.base_pos = obj_targ_pos
+                            #final_nav_targ = obj_targ_pos
+                            #found_path = True
                 # place_robot_at_closest_point_with_navmesh(
                 final_nav_targ = np.array(final_nav_targ)
             print("Placed!")
