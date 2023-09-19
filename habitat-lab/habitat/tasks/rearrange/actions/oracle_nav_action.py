@@ -63,6 +63,7 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
         self._turn_thresh = self._config.turn_thresh
         self._turn_velocity = self._config.turn_velocity
         self._forward_velocity = self._config.forward_velocity
+        self.ep_num = -1
 
     @staticmethod
     def _compute_turn(rel, turn_vel, robot_forward):
@@ -125,6 +126,7 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
         self.last_rot = None
         self.forward_side_step_try = -1
         self.spot_init_failed = False
+        self.ep_num +=1
 
     def _get_target_for_idx(self, nav_to_target_idx: int):
         nav_to_obj = self._poss_entities[nav_to_target_idx]
@@ -592,6 +594,8 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
             #Replace to just sample until 
             #don't replan!
             #breakpoint()
+            # if self.ep_num==0:
+            #     self.spot_init_failed = True
             if np.linalg.norm((obj_targ_pos - self.prev_obj_targ_pos)[[0, 2]])<=0.1: 
                 final_nav_targ = self.prev_final_nav_targ
             else:
@@ -630,7 +634,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                             breakpoint()
                 # place_robot_at_closest_point_with_navmesh(
                 final_nav_targ = np.array(final_nav_targ)
-            print("Placed!")
+            #print("Placed!")
 
             robot_rot = float(self.cur_articulated_agent.base_rot)
             robot_pos = np.array(self.cur_articulated_agent.base_pos)
