@@ -38,6 +38,8 @@ hydra:
     name: 'pop_play_humanoid_spot_fp'
 
 habitat:
+  dataset:
+    data_path: data/datasets/tiffany/aug16/fbe_balanced_gen_just_18.json.gz 
   task:
     actions:
       agent_0_oracle_nav_with_backing_up_action:
@@ -64,7 +66,7 @@ habitat:
         spawn_max_dist_to_obj: -1
     robot_at_thresh: 3.0
   environment:
-    max_episode_steps: 5000
+    max_episode_steps: 500 #0
 
   gym:
     obs_keys:
