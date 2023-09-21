@@ -439,6 +439,8 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         nav_to_target_idx = kwargs[
             self._action_arg_prefix + "oracle_nav_with_backing_up_action"
         ]
+        if self.motion_type == "base_velocity":
+            print("nav_to_target_idx ", nav_to_target_idx)
         if nav_to_target_idx <= 0 or nav_to_target_idx > len(
             self._poss_entities
         ):
@@ -501,10 +503,15 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 need_move_backward = self.rotation_collision_check(
                     cur_nav_targ,
                 )
-            print("dist_to_final_nav_targ", dist_to_final_nav_targ)
-            print("self._config.dist_thresh", self._config.dist_thresh)
-            print("angle_to_target", angle_to_target)
-            print("self._config.turn_thresh", self._config.turn_thresh)
+            if self.motion_type == "base_velocity":
+                print("obj_targ_pos", obj_targ_pos)
+                print("final nav targ coordinate", final_nav_targ)
+                print("dist_to_final_nav_targ", dist_to_final_nav_targ)
+                print("self._config.dist_thresh", self._config.dist_thresh)
+                print("angle_to_target", angle_to_target)
+                print("angle_to_obj", angle_to_obj)
+                print("self._config.turn_thresh", self._config.turn_thresh)
+                print("at goal is ", at_goal)
 
             if need_move_backward:
                 # Backward direction
@@ -527,6 +534,10 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                     dist_to_final_nav_targ < self._config.dist_thresh
                     and angle_to_obj < self._config.turn_thresh
                 )
+
+                if self.motion_type == "base_velocity":
+                    print("at goal after backward is ", at_goal)
+
 
             if self.motion_type == "base_velocity":
                 if not at_goal:
@@ -556,6 +567,8 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 kwargs[f"{self._action_arg_prefix}base_vel"] = np.array(vel)
 
                 print("vel is ", vel)
+                print("vel after looking at object", OracleNavAction._compute_turn(rel_pos, self._config.turn_velocity, robot_forward))
+                print("vel after looking at target waypoint", OracleNavAction._compute_turn(rel_targ, self._config.turn_velocity, robot_forward))
                 if vel[0]==-1:
                     self.cur_articulated_agent.base_pos = cur_nav_targ
                     
