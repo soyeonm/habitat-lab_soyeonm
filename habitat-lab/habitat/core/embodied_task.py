@@ -503,9 +503,9 @@ class EmbodiedTask:
                 pickle.dump(starting_poses, open(os.path.join(action_sequence_save_dir, "starting_poses.p"),'wb'))
 
             #action sequences
-            self.action_sequences.append(action)
+            #self.action_sequences.append(action)
             #actually save
-            pickle.dump(self.action_sequences, open(os.path.join(action_sequence_save_dir, "sequences.p"), 'wb'))
+            #pickle.dump(self.action_sequences, open(os.path.join(action_sequence_save_dir, "sequences.p"), 'wb'))
 
         #breakpoint()
         #breakpoint()
@@ -539,6 +539,19 @@ class EmbodiedTask:
         self._is_episode_active = self._check_episode_is_active(
             observations=observations, action=action, episode=episode
         )
+
+        #Save poses in habitat coord
+        if self._config.save_action_sequences:
+            articulated_agent0 = self._sim.get_agent_data(0).articulated_agent
+            articulated_agent1 = self._sim.get_agent_data(1).articulated_agent
+            #breakpoint()
+            poses = {'agent_0':{'base_pos': np.array(articulated_agent0.base_pos), 'base_rot':float(articulated_agent0.base_rot)},
+                            'agent_1':{'base_pos': np.array(articulated_agent1.base_pos), 'base_rot':float(articulated_agent1.base_rot)}} 
+            cur_dict = {'action': action, 'poses': poses}
+            self.action_sequences.append(cur_dict) #(action)
+            #actually save
+            pickle.dump(self.action_sequences, open(os.path.join(action_sequence_save_dir, "sequences.p"), 'wb'))
+
         return observations
 
     def get_action_name(self, action_index: Union[int, np.integer]):
