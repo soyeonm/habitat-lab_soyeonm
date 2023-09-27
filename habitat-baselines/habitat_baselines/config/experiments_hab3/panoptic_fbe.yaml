@@ -42,7 +42,7 @@ hydra:
 habitat:
   dataset:
     #data_path: #data/datasets/tiffany/aug16/episodes_3700.json.gz
-    data_path: data/datasets/floorplanner/rearrange/scratch/train/largetrain_37s_scene_18_only.json.gz  #data/datasets/tiffany/aug16/fbe_balanced_gen_just_18.json.gz #data/datasets/floorplanner/rearrange/scratch/train/largetrain_37s_scene_18_only.json.gz  #data/datasets/tiffany/aug16/fbe_balanced_gen_just_18.json.gz 
+    data_path: data/datasets/floorplanner/rearrange/scratch/train/largetrain_37s_scene_18_only.json.gz  #data/datasets/tiffany/aug16/fbe_balanced_gen_just_18.json.gz #data/datasets/floorplanner/rearrange/scratch/train/largetrain_37s_scene_18_only.json.gz #data/datasets/tiffany/aug16/fbe_balanced_gen.json.gz #data/datasets/tiffany/aug16/fbe_balanced_gen_just_18.json.gz  #data/datasets/floorplanner/rearrange/scratch/train/largetrain_37s_scene_18_only.json.gz  #data/datasets/tiffany/aug16/fbe_balanced_gen_just_18.json.gz #data/datasets/floorplanner/rearrange/scratch/train/largetrain_37s_scene_18_only.json.gz  #data/datasets/tiffany/aug16/fbe_balanced_gen_just_18.json.gz 
     #data_path: data/datasets/floorplanner/rearrange/scratch/train/largetrain_37s_37kepi_2obj.json.gz #tiffany/aug16/fbe_balanced_gen.json.gz #fbe_balanced_gen_no_18_20.json.gz #all_fbe.json.gz #fbe_balanced_gen.json.gz #fbe_balanced_gen_no_18_20.json.gz #fbe_balanced_gen.json.gz #all_fbe.json.gz #data/datasets/floorplanner/rearrange/scratch/train/jul19_same_recep_100_episodes.json.gz #jul19_same_recep_2000_episodes.json.gz #jul19_same_recep_100_episodes.json.gz #sampled_20_largetrain_15s_15000epi_2obj.json.gz #jul14_same_recep_100_episodes.json.gz #start_same_recep.json.gz #sampled_20_largetrain_15s_15000epi_2obj.json.gz
   task:
     save_action_sequences:

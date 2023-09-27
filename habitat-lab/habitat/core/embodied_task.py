@@ -492,11 +492,13 @@ class EmbodiedTask:
 
             #Save starting pose
             if self._cur_episode_step==0:
-                articulated_agent0 = self._sim.get_agent_data(0).articulated_agent
-                articulated_agent1 = self._sim.get_agent_data(1).articulated_agent
                 #breakpoint()
-                starting_poses = {'agent_0':{'base_pos': np.array(articulated_agent0.base_pos), 'base_rot':float(articulated_agent0.base_rot)},
-                                'agent_1':{'base_pos': np.array(articulated_agent1.base_pos), 'base_rot':float(articulated_agent1.base_rot)}}
+                # starting_poses = {'agent_0':{'base_pos': np.array(articulated_agent0.base_pos), 'base_rot':float(articulated_agent0.base_rot)},
+                #                 'agent_1':{'base_pos': np.array(articulated_agent1.base_pos), 'base_rot':float(articulated_agent1.base_rot)}}
+                starting_poses = {'agent0_trans': np.array(self._sim.agents_mgr[0].articulated_agent.sim_obj.transformation), 
+                        'agent1_trans': np.array(self._sim.agents_mgr[1].articulated_agent.sim_obj.transformation)}
+
+  
                 # starting_poses = {'agent_0':{'base_pos': np.array(articulated_agent0.), 'base_rot':float(articulated_agent0.base_rot)},
                 #                 'agent_1':{'base_pos': np.array(articulated_agent1.base_pos), 'base_rot':float(articulated_agent1.base_rot)}}
                 #breakpoint()
@@ -542,11 +544,13 @@ class EmbodiedTask:
 
         #Save poses in habitat coord
         if self._config.save_action_sequences:
-            articulated_agent0 = self._sim.get_agent_data(0).articulated_agent
-            articulated_agent1 = self._sim.get_agent_data(1).articulated_agent
+            #articulated_agent0 = self._sim.get_agent_data(0).articulated_agent
+            #articulated_agent1 = self._sim.get_agent_data(1).articulated_agent
             #breakpoint()
-            poses = {'agent_0':{'base_pos': np.array(articulated_agent0.base_pos), 'base_rot':float(articulated_agent0.base_rot)},
-                            'agent_1':{'base_pos': np.array(articulated_agent1.base_pos), 'base_rot':float(articulated_agent1.base_rot)}} 
+            # poses = {'agent_0':{'base_pos': np.array(articulated_agent0.base_pos), 'base_rot':float(articulated_agent0.base_rot)},
+            #                 'agent_1':{'base_pos': np.array(articulated_agent1.base_pos), 'base_rot':float(articulated_agent1.base_rot)}} 
+            poses = {'agent0_trans': np.array(self._sim.agents_mgr[0].articulated_agent.sim_obj.transformation), 
+                        'agent1_trans': np.array(self._sim.agents_mgr[1].articulated_agent.sim_obj.transformation)}
             cur_dict = {'action': action, 'poses': poses}
             self.action_sequences.append(cur_dict) #(action)
             #actually save
