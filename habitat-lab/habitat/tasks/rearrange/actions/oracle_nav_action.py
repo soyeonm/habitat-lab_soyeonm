@@ -787,9 +787,9 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                     dist_to_final_nav_targ < self._config.dist_thresh
                     and angle_to_obj < self._config.turn_thresh
                 )
-
             print("turn thresh is ",  self._config.turn_thresh)
             if self.motion_type == "base_velocity":
+                self.cur_articulated_agent.at_goal_ona = at_goal
                 if not at_goal:
                     self.at_goal = False
                     self.at_goal_prev = False

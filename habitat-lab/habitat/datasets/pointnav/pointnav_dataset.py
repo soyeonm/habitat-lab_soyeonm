@@ -18,7 +18,7 @@ from habitat.tasks.nav.nav import (
     NavigationGoal,
     ShortestPathPoint,
 )
-
+import copy
 if TYPE_CHECKING:
     from omegaconf import DictConfig
 
@@ -57,6 +57,8 @@ class PointNavDatasetV1(Dataset):
         with read_write(cfg):
             cfg.content_scenes = []
             dataset = cls(cfg)
+            ep_copy = dataset._get_episodes_copy(cfg)
+            #breakpoint()
             has_individual_scene_files = os.path.exists(
                 dataset.content_scenes_path.split("{scene}")[0].format(
                     data_path=dataset_dir
@@ -66,12 +68,21 @@ class PointNavDatasetV1(Dataset):
                 return cls._get_scenes_from_folder(
                     content_scenes_path=dataset.content_scenes_path,
                     dataset_dir=dataset_dir,
-                )
+                ), ep_copy
             else:
                 # Load the full dataset, things are not split into separate files
                 cfg.content_scenes = [ALL_SCENES_MASK]
                 dataset = cls(cfg)
-                return list(map(cls.scene_from_scene_path, dataset.scene_ids))
+                #breakpoint()
+                return list(map(cls.scene_from_scene_path, dataset.scene_ids)), ep_copy
+
+
+    #@staticmethod
+    def _get_episodes_copy(self, config):
+        datasetfile_path = config.data_path.format(split=config.split)
+
+        self._load_from_file(datasetfile_path, config.scenes_dir)
+        return self.episodes_copy 
 
     @staticmethod
     def _get_scenes_from_folder(
@@ -113,6 +124,8 @@ class PointNavDatasetV1(Dataset):
         datasetfile_path = config.data_path.format(split=config.split)
 
         self._load_from_file(datasetfile_path, config.scenes_dir)
+        self.episodes_copy = copy.deepcopy(self.episodes)
+        #breakpoint()
 
         # Read separate file for each scene
         dataset_dir = os.path.dirname(datasetfile_path)
@@ -140,6 +153,7 @@ class PointNavDatasetV1(Dataset):
             self.episodes = list(
                 filter(self.build_content_scenes_filter(config), self.episodes)
             )
+        #breakpoint()
 
     def to_binary(self) -> Dict[str, Any]:
         raise NotImplementedError()

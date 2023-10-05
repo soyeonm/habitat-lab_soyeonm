@@ -17,7 +17,7 @@ from habitat.core.registry import registry
 from habitat.core.utils import DatasetFloatJSONEncoder
 from habitat.datasets.pointnav.pointnav_dataset import PointNavDatasetV1
 from habitat.datasets.utils import check_and_gen_physics_config
-
+import copy
 if TYPE_CHECKING:
     from omegaconf import DictConfig
 
@@ -67,16 +67,19 @@ class RearrangeDatasetV0(PointNavDatasetV1):
         check_and_gen_physics_config()
 
         super().__init__(config)
+        #breakpoint()
 
     def from_json(
         self, json_str: str, scenes_dir: Optional[str] = None
     ) -> None:
         deserialized = json.loads(json_str)
+        
         for i, episode in enumerate(deserialized["episodes"]):
             rearrangement_episode = RearrangeEpisode(**episode)
             rearrangement_episode.episode_id = str(i)
 
             self.episodes.append(rearrangement_episode)
+        self.episodes_copy = copy.deepcopy(self.episodes)
 
     def to_binary(self) -> Dict[str, Any]:
         def access_idx(k, name_to_idx):
