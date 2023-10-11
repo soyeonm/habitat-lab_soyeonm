@@ -40,6 +40,14 @@ class RearrangeEpisode(Episode):
     target_receptacles: List[Tuple[str, int]] = []
     goal_receptacles: List[Tuple[str, int]] = []
     name_to_receptacle: Dict[str, str] = {}
+    #Just add these properties
+    #from generate_and_assign_prompts.py
+    original_json: str = ''
+    original_json_episode_idx: str = ''
+    recep: str = ''
+    prompt: Dict[str, str] = {}
+
+
 
 
 @registry.register_dataset(name="RearrangeDataset-v0")
