@@ -381,8 +381,9 @@ class PddlSimState:
         #breakpoint()
         # Set all desired object states.
         #breakpoint()
-        import ipdb; ipdb.set_trace()
+        #import ipdb; ipdb.set_trace()
         for entity, target in self._obj_states.items():
+            ipdb.set_trace()
             if not sim_info.check_type_matches(
                 entity, SimulatorObjectType.MOVABLE_ENTITY.value
             ):
@@ -395,6 +396,7 @@ class PddlSimState:
             elif sim_info.check_type_matches(
                 target, SimulatorObjectType.GOAL_ENTITY.value
             ):
+                ipdb.set_trace()
                 targ_idx = cast(
                     int,
                     sim_info.search_for_entity(target),
@@ -432,7 +434,7 @@ class PddlSimState:
             set_obj.angular_velocity = mn.Vector3.zero_init()
             set_obj.linear_velocity = mn.Vector3.zero_init()
 
-        breakpoint()
+        #breakpoint()
         # Set all desired articulated object states.
         for art_entity, set_art in self._art_states.items():
             sim = sim_info.sim
