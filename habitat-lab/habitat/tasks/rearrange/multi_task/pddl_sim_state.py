@@ -151,10 +151,8 @@ class PddlRobotState:
         """
         Sets the robot state in the simulator.
         """
-        robot_id = cast(
-            int,
-            sim_info.search_for_entity(robot_entity),
-        )
+        #breakpoint()
+        robot_id = cast(int,sim_info.search_for_entity(robot_entity),)
         sim = sim_info.sim
         grasp_mgr = sim.get_agent_data(robot_id).grasp_mgr
         # Set the snapped object information
@@ -380,7 +378,10 @@ class PddlSimState:
         Set this state in the simulator. Warning, this steps the simulator.
         """
         sim = sim_info.sim
+        #breakpoint()
         # Set all desired object states.
+        #breakpoint()
+        import ipdb; ipdb.set_trace()
         for entity, target in self._obj_states.items():
             if not sim_info.check_type_matches(
                 entity, SimulatorObjectType.MOVABLE_ENTITY.value
@@ -405,6 +406,7 @@ class PddlSimState:
                 target, SimulatorObjectType.STATIC_RECEPTACLE_ENTITY.value
             ):
                 # Place object on top of receptacle.
+                ipdb.set_trace()
                 recep = cast(mn.Range3D, sim_info.search_for_entity(target))
 
                 # Divide by 2 because the `from_center` creates from the half size.
@@ -430,6 +432,7 @@ class PddlSimState:
             set_obj.angular_velocity = mn.Vector3.zero_init()
             set_obj.linear_velocity = mn.Vector3.zero_init()
 
+        breakpoint()
         # Set all desired articulated object states.
         for art_entity, set_art in self._art_states.items():
             sim = sim_info.sim
