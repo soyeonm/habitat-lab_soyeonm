@@ -382,6 +382,7 @@ class PddlSimState:
         # Set all desired object states.
         #breakpoint()
         #import ipdb; ipdb.set_trace()
+        import ipdb
         for entity, target in self._obj_states.items():
             ipdb.set_trace()
             if not sim_info.check_type_matches(
