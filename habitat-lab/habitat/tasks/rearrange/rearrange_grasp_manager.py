@@ -148,6 +148,31 @@ class RearrangeGraspManager:
         self._snapped_marker_id = None
         self._managed_articulated_agent.close_gripper()
 
+    def desnap_without_snap_constraints(self, force=False) -> None:
+        self._vis_info = []
+        if self._snapped_obj_id is not None:
+            obj_bb = get_aabb(self.snap_idx, self._sim)
+            if obj_bb is not None:
+                if force:
+                    self.snap_rigid_obj.override_collision_group(
+                        CollisionGroups.Default
+                    )
+                else:
+                    self._leave_info = (
+                        self.snap_rigid_obj,
+                        max(obj_bb.size_x(), obj_bb.size_y(), obj_bb.size_z()),
+                    )
+
+        for constraint_id in self._snap_constraints:
+            self._sim.remove_rigid_constraint(constraint_id)
+        self._snap_constraints = []
+
+        self._snapped_obj_id = None
+        self._snapped_marker_id = None
+        self._managed_articulated_agent.close_gripper()
+
+
+
     @property
     def snap_idx(self) -> Optional[int]:
         """
