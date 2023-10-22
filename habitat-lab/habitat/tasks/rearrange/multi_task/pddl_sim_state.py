@@ -434,6 +434,7 @@ class PddlSimState:
             sim.internal_step(-1)
             set_obj.angular_velocity = mn.Vector3.zero_init()
             set_obj.linear_velocity = mn.Vector3.zero_init()
+            breakpoint()
 
         #breakpoint()
         # Set all desired articulated object states.
