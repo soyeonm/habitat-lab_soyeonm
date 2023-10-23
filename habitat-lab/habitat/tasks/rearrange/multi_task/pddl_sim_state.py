@@ -382,9 +382,9 @@ class PddlSimState:
         # Set all desired object states.
         #breakpoint()
         #import ipdb; ipdb.set_trace()
-        import ipdb
+        #import ipdb
         for entity, target in self._obj_states.items():
-            ipdb.set_trace()
+            #ipdb.set_trace()
             if not sim_info.check_type_matches(
                 entity, SimulatorObjectType.MOVABLE_ENTITY.value
             ):
@@ -397,7 +397,7 @@ class PddlSimState:
             elif sim_info.check_type_matches(
                 target, SimulatorObjectType.GOAL_ENTITY.value
             ):
-                ipdb.set_trace()
+                #ipdb.set_trace()
                 targ_idx = cast(
                     int,
                     sim_info.search_for_entity(target),
@@ -409,7 +409,7 @@ class PddlSimState:
                 target, SimulatorObjectType.STATIC_RECEPTACLE_ENTITY.value
             ):
                 # Place object on top of receptacle.
-                ipdb.set_trace()
+                #ipdb.set_trace()
                 recep = cast(mn.Range3D, sim_info.search_for_entity(target))
 
                 # Divide by 2 because the `from_center` creates from the half size.
@@ -434,7 +434,7 @@ class PddlSimState:
             sim.internal_step(-1)
             set_obj.angular_velocity = mn.Vector3.zero_init()
             set_obj.linear_velocity = mn.Vector3.zero_init()
-            breakpoint()
+            #breakpoint()
 
         #breakpoint()
         # Set all desired articulated object states.
