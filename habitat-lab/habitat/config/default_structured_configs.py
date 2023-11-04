@@ -1415,6 +1415,25 @@ class ArmRGBSensorConfig(HabitatSimRGBSensorConfig):
     width: int = 256
     height: int = 256
 
+@dataclass
+class ArmRGBDownSensorConfig(HabitatSimRGBSensorConfig):
+    uuid: str = "articulated_agent_arm_rgb_down"
+    width: int = 256
+    height: int = 256
+
+
+@dataclass
+class ArmPanopticDownSensorConfig(HabitatSimSemanticSensorConfig):
+    uuid: str = "articulated_agent_arm_panoptic_down"
+    width: int = 256
+    height: int = 256
+
+@dataclass
+class ArmDepthDownSensorConfig(HabitatSimDepthSensorConfig):
+    uuid: str = "articulated_agent_arm_depth_down"
+    width: int = 256
+    height: int = 256
+
 
 @dataclass
 class ArmDepthSensorConfig(HabitatSimDepthSensorConfig):
@@ -1859,6 +1878,25 @@ cs.store(
     group="habitat/simulator/sim_sensors",
     name="arm_rgb_sensor",
     node=ArmRGBSensorConfig,
+)
+
+cs.store(
+    group="habitat/simulator/sim_sensors",
+    name="arm_rgb_down_sensor",
+    node=ArmRGBDownSensorConfig,
+)
+
+cs.store(
+    group="habitat/simulator/sim_sensors",
+    name="arm_panoptic_down_sensor",
+    node=ArmPanopticDownSensorConfig,
+)
+
+
+cs.store(
+    group="habitat/simulator/sim_sensors",
+    name="arm_depth_down_sensor",
+    node=ArmDepthDownSensorConfig,
 )
 
 cs.store(
