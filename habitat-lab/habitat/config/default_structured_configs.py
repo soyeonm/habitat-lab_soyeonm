@@ -1423,7 +1423,7 @@ class ArmRGBDownSensorConfig(HabitatSimRGBSensorConfig):
 
 
 @dataclass
-class ArmPanopticLookDownSensorConfig(HabitatSimRGBSensorConfig):
+class ArmPanopticLookDownSensorConfig(HabitatSimSemanticSensorConfig):
     uuid: str = "articulated_agent_arm_panoptic_look_down"
     width: int = 256
     height: int = 256
