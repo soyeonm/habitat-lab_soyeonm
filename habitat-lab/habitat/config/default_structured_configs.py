@@ -1423,8 +1423,8 @@ class ArmRGBDownSensorConfig(HabitatSimRGBSensorConfig):
 
 
 @dataclass
-class ArmPanopticDownSensorConfig(HabitatSimSemanticSensorConfig):
-    uuid: str = "articulated_agent_arm_panoptic_down"
+class ArmPanopticLookDownSensorConfig(HabitatSimRGBSensorConfig):
+    uuid: str = "articulated_agent_arm_panoptic_look_down"
     width: int = 256
     height: int = 256
 
@@ -1888,8 +1888,8 @@ cs.store(
 
 cs.store(
     group="habitat/simulator/sim_sensors",
-    name="arm_panoptic_down_sensor",
-    node=ArmPanopticDownSensorConfig,
+    name="arm_panoptic_look_down_sensor",
+    node=ArmPanopticLookDownSensorConfig,
 )
 
 
