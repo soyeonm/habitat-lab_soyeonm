@@ -44,6 +44,7 @@ class RearrangeEpisode(Episode):
     #from generate_and_assign_prompts.py
     original_json: str = ''
     original_json_episode_idx: str = ''
+    scripted_actions_path: str = ''
     recep: str = ''
     prompt: Dict[str, str] = {}
 
