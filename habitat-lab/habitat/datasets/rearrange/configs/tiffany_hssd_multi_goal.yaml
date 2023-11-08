@@ -432,25 +432,25 @@
       type: uniform #category_balanced
       params:
         object_sets:
-        - seen_action_figure
+        # - seen_action_figure
         - seen_basket
         - seen_book
         - seen_bowl
-        - seen_candle_holder
-        - seen_canister
+        # - seen_candle_holder
+        # - seen_canister
         - seen_cup
-        - seen_dishtowel
+        # - seen_dishtowel
         - seen_hat
-        - seen_medicine_bottle
-        - seen_mouse_pad
-        - seen_pencil_case
+        # - seen_medicine_bottle
+        # - seen_mouse_pad
+        # - seen_pencil_case
         - seen_plate
         - seen_shoe
-        - seen_soap_dish
-        - seen_sponge
-        - seen_stuffed_toy
-        - seen_sushi_mat
-        - seen_tape
+        # - seen_soap_dish
+        # - seen_sponge
+        # - seen_stuffed_toy
+        # - seen_sushi_mat
+        # - seen_tape
         - seen_vase
         receptacle_sets:
         - hab2
