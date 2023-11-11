@@ -28,7 +28,6 @@ def setup_cfg():
     # Set score_threshold for builtin models
     cfg.MODEL.WEIGHTS = os.path.join(Detic_directory, cfg.MODEL.WEIGHTS)
     cfg.MODEL.ROI_BOX_HEAD.CAT_FREQ_PATH = os.path.join(Detic_directory, cfg.MODEL.ROI_BOX_HEAD.CAT_FREQ_PATH )
-    breakpoint()
     cfg.MODEL.RETINANET.SCORE_THRESH_TEST = confidence_threshold #args.confidence_threshold
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = confidence_threshold #args.confidence_threshold
     cfg.MODEL.PANOPTIC_FPN.COMBINE.INSTANCES_CONFIDENCE_THRESH = confidence_threshold #args.confidence_threshold
