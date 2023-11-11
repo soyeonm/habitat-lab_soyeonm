@@ -14,7 +14,7 @@ from detic.config import add_detic_config
 
 def setup_cfg():
     config_file = os.path.join(Detic_directory,'configs/Detic_LCOCOI21k_CLIP_SwinB_896b32_4x_ft4x_max-size.yaml')
-    opts = ['MODEL.WEIGHTS', 'models/Detic_LCOCOI21k_CLIP_SwinB_896b32_4x_ft4x_max-size.pth']
+    opts = ['MODEL.WEIGHTS', os.path.join(Detic_directory, 'models/Detic_LCOCOI21k_CLIP_SwinB_896b32_4x_ft4x_max-size.pth')]
     confidence_threshold = 0.5
     pred_all_class = False
 
@@ -26,6 +26,9 @@ def setup_cfg():
     cfg.merge_from_file(config_file)#args.config_file)
     cfg.merge_from_list(opts)#args.opts)
     # Set score_threshold for builtin models
+    cfg.MODEL.WEIGHTS = os.path.join(Detic_directory, cfg.MODEL.WEIGHTS)
+    cfg.MODEL.ROI_BOX_HEAD.CAT_FREQ_PATH = os.path.join(Detic_directory, cfg.MODEL.ROI_BOX_HEAD.CAT_FREQ_PATH )
+    breakpoint()
     cfg.MODEL.RETINANET.SCORE_THRESH_TEST = confidence_threshold #args.confidence_threshold
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = confidence_threshold #args.confidence_threshold
     cfg.MODEL.PANOPTIC_FPN.COMBINE.INSTANCES_CONFIDENCE_THRESH = confidence_threshold #args.confidence_threshold

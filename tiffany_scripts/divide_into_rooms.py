@@ -93,7 +93,7 @@ for ci, con_region in connected_regions_dict.items():
 	if ci !=3 :
 		room_img[:, :, 0][np.where(con_region)] = random.randrange(0, 255)
 		room_img[:, :, 1][np.where(con_region)] = random.randrange(0, 255)
-		room_img[:, :, 2][np.where(con_region)] = random.randrange(0, 255)
+		room_img[:, :, 2][np.where(con_region)] = random.randrange(0, 255) 
 
 cv2.imshow("room img", room_img); cv2.waitKey(1)
 os.makedirs("/Users/soyeonm/Documents/SocialNavigation/figures_and_such")

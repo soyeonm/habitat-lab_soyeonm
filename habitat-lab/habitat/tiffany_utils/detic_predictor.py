@@ -18,6 +18,10 @@ import torch
 import json
 import numpy as np
 from torch.nn import functional as F
+import os
+Detic_directory = os.environ["Detic_directory"]
+
+
 
 def get_clip_embeddings(vocabulary, prompt='a '):
     from detic.modeling.text.text_encoder import build_text_encoder
@@ -28,10 +32,10 @@ def get_clip_embeddings(vocabulary, prompt='a '):
     return emb
 
 BUILDIN_CLASSIFIER = {
-    'lvis': 'datasets/metadata/lvis_v1_clip_a+cname.npy',
-    'objects365': 'datasets/metadata/o365_clip_a+cnamefix.npy',
-    'openimages': 'datasets/metadata/oid_clip_a+cname.npy',
-    'coco': 'datasets/metadata/coco_clip_a+cname.npy',
+    'lvis': os.path.join(Detic_directory, 'datasets/metadata/lvis_v1_clip_a+cname.npy'),
+    'objects365': os.path.join(Detic_directory, 'datasets/metadata/o365_clip_a+cnamefix.npy'),
+    'openimages': os.path.join(Detic_directory, 'datasets/metadata/oid_clip_a+cname.npy'),
+    'coco': os.path.join(Detic_directory, 'datasets/metadata/coco_clip_a+cname.npy'),
 }
 
 BUILDIN_METADATA_PATH = {
