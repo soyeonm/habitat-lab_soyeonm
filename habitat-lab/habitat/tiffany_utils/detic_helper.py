@@ -38,6 +38,7 @@ def setup_cfg():
     return cfg
 
 from argparse import Namespace
-detic_args = Namespace(vocabulary = 'coco')
+detic_args = Namespace(vocabulary = 'custom')
+detic_args.custom_vocabulary = "bed,chair"
 
 
