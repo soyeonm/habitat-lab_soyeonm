@@ -39,6 +39,7 @@ def setup_cfg():
 
 from argparse import Namespace
 detic_args = Namespace(vocabulary = 'custom')
-detic_args.custom_vocabulary = "bed,chair"
+#Let's fix all the classes and put in
+#detic_args.custom_vocabulary = "bed,chair"
 
 

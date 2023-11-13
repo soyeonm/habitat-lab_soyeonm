@@ -596,7 +596,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
             #breakpoint()
             # if self.ep_num==0:
             #     self.spot_init_failed = True
-            breakpoint()
+            #breakpoint()
             if np.linalg.norm((obj_targ_pos - self.prev_obj_targ_pos)[[0, 2]])<=0.1: 
                 final_nav_targ = self.prev_final_nav_targ
             else:
