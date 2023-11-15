@@ -435,7 +435,7 @@
         # - seen_action_figure
         - seen_basket
         - seen_book
-        - seen_bowl
+        #- seen_bowl
         # - seen_candle_holder
         # - seen_canister
         - seen_cup
@@ -448,10 +448,10 @@
         - seen_shoe
         # - seen_soap_dish
         # - seen_sponge
-        # - seen_stuffed_toy
+        - seen_stuffed_toy
         # - seen_sushi_mat
         # - seen_tape
-        - seen_vase
+        #- seen_vase
         receptacle_sets:
         - hab2
         num_samples:
