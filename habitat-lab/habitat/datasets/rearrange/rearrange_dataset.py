@@ -47,6 +47,8 @@ class RearrangeEpisode(Episode):
     scripted_actions_path: str = ''
     recep: str = ''
     prompt: Dict[str, str] = {}
+    load_from_json: str = ''
+    load_from_json_ep_idx: str = ''
 
 
 
