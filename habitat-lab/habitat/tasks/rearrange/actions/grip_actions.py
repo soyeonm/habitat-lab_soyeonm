@@ -240,6 +240,7 @@ class GazeGraspAction(MagicGraspAction):
                 .sensor_states["articulated_agent_arm_rgb"]
                 .position
             )
+            
         elif isinstance(self.cur_articulated_agent, StretchRobot):
             cam_pos = (
                 self._sim.agents[0]
