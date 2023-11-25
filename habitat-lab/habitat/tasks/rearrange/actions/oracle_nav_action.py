@@ -552,6 +552,17 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                     return self._sim.step(HabitatSimActions.base_velocity)
                 else:
                     return {}
+        if (self._action_arg_prefix + "just_rotate" in kwargs) and kwargs[self._action_arg_prefix + "just_rotate"] != 0.0:
+            vel = [0, 0, self._config.turn_velocity]
+            kwargs[f"{self._action_arg_prefix}base_vel"] = np.array(vel)
+            
+            return BaseVelNonCylinderAction.step(
+                self, *args, is_last_action=is_last_action, **kwargs
+            )
+
+
+            #Just retyrn
+
 
         #Make human move
         if isinstance(nav_to_target_idx, np.ndarray) and nav_to_target_idx[0]==np.inf:
