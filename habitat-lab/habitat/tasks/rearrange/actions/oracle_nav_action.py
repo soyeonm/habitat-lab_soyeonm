@@ -541,6 +541,17 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         self.collided_rot = False
         self.collided_for = False
         self.collided_lat = False
+
+
+        if (self._action_arg_prefix + "just_rotate" in kwargs) and kwargs[self._action_arg_prefix + "just_rotate"] != 0.0:
+            vel = [0, 0, self._config.turn_velocity]
+            kwargs[f"{self._action_arg_prefix}base_vel"] = np.array(vel)
+            #breakpoint()
+            return BaseVelNonCylinderAction.step(
+                self, *args, is_last_action=is_last_action, **kwargs
+            )
+
+
         nav_to_target_idx = kwargs[
             self._action_arg_prefix + "oracle_nav_with_backing_up_action"
         ] #something like array([3.], dtype=float32) if original (not move freely, not human)
@@ -552,14 +563,6 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                     return self._sim.step(HabitatSimActions.base_velocity)
                 else:
                     return {}
-        breakpoint()
-        if (self._action_arg_prefix + "just_rotate" in kwargs) and kwargs[self._action_arg_prefix + "just_rotate"] != 0.0:
-            vel = [0, 0, self._config.turn_velocity]
-            kwargs[f"{self._action_arg_prefix}base_vel"] = np.array(vel)
-            breakpoint()
-            return BaseVelNonCylinderAction.step(
-                self, *args, is_last_action=is_last_action, **kwargs
-            )
 
 
             #Just retyrn
