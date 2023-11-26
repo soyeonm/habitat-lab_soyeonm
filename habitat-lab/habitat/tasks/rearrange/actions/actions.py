@@ -464,7 +464,6 @@ class BaseVelAction(ArticulatedAgentAction):
 
     def step(self, *args, is_last_action, **kwargs):
         lin_vel, ang_vel = kwargs[self._action_arg_prefix + "base_vel"]
-        breakpoint()
         lin_vel = np.clip(lin_vel, -1, 1) * self._lin_speed
         ang_vel = np.clip(ang_vel, -1, 1) * self._ang_speed
         if not self._allow_back:
