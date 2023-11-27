@@ -61,6 +61,8 @@ class PddlApplyAction(ArticulatedAgentAction):
         cur_i = 0
         for action in self._action_ordering:
             action_part = apply_pddl_action[cur_i : cur_i + action.n_args][:]
+            if np.sum(apply_pddl_action)>0:
+                breakpoint()
             if sum(action_part) > 0:
                 # Take action
                 # Convert 1 indexed to 0 indexed.
