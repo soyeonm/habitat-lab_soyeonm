@@ -84,6 +84,7 @@ class PddlAction:
         entities for the post-condition based on the pre-condition quantifiers.
         """
         is_sat = self._pre_cond.is_true(sim_info)
+        breakpoint()
         if not is_sat:
             return False
         self.apply(sim_info)

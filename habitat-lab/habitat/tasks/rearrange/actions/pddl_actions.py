@@ -79,7 +79,7 @@ class PddlApplyAction(ArticulatedAgentAction):
                 ].clone()
                 apply_action.set_param_values(param_values)
                 self._prev_action = apply_action
-
+                breakpoint()
                 if not apply_action.apply_if_true(
                     self._task.pddl_problem.sim_info
                 ):
