@@ -543,13 +543,13 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         self.collided_lat = False
 
 
-        if (self._action_arg_prefix + "just_rotate" in kwargs) and kwargs[self._action_arg_prefix + "just_rotate"] != 0.0:
-            vel = [0, 0, self._config.turn_velocity]
-            kwargs[f"{self._action_arg_prefix}base_vel"] = np.array(vel)
-            #breakpoint()
-            return BaseVelNonCylinderAction.step(
-                self, *args, is_last_action=is_last_action, **kwargs
-            )
+        # if (self._action_arg_prefix + "just_rotate" in kwargs) and kwargs[self._action_arg_prefix + "just_rotate"] != 0.0:
+        #     vel = [0, 0, self._config.turn_velocity]
+        #     kwargs[f"{self._action_arg_prefix}base_vel"] = np.array(vel)
+        #     #breakpoint()
+        #     return BaseVelNonCylinderAction.step(
+        #         self, *args, is_last_action=is_last_action, **kwargs
+        #     )
 
 
         nav_to_target_idx = kwargs[
