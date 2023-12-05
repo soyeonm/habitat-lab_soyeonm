@@ -766,7 +766,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
             print("dist_to_final_nav_targ", dist_to_final_nav_targ)
             print("angle_to_obj", angle_to_obj)
             print("angle_to_target", angle_to_target)
-            breakpoint()
+            #breakpoint()
 
             # Planning to see if the robot needs to do back-up
             need_move_backward = False
