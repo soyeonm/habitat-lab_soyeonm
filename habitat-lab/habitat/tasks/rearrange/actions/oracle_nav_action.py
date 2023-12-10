@@ -561,7 +561,6 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
 
         if (self._action_arg_prefix + "just_rotate" in kwargs) and kwargs[self._action_arg_prefix + "just_rotate"] != 0.0:
             self.dist_thresh = 1.35 #Just set it to this
-            breakpoint()
         else:
             self.dist_thresh = self._ori_dist_thresh
 
