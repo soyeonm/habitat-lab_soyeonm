@@ -773,7 +773,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
             dist_to_final_nav_targ = np.linalg.norm((final_nav_targ - robot_pos)[[0, 2]])
 
             at_goal = (
-                dist_to_final_nav_targ < self._config.dist_thresh
+                dist_to_final_nav_targ < self.dist_thresh
                 and angle_to_obj < self._config.turn_thresh
             ) or (self.at_goal_prev and dist_to_final_nav_targ < self._config.dist_thresh)
             print("at goal ", at_goal)
