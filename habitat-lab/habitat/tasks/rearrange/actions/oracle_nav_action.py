@@ -201,10 +201,11 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
         self.humanoid_controller.obj_transform_base.translation += fixup
 
     def step(self, *args, is_last_action, **kwargs):
-        if (self._action_arg_prefix + "just_rotate" in kwargs) and kwargs[self._action_arg_prefix + "just_rotate"] != 0.0:
-            self.dist_thresh = 1.35 #Just set it to this
-        else:
-            self.dist_thresh = self._ori_dist_thresh
+        # if (self._action_arg_prefix + "just_rotate" in kwargs) and kwargs[self._action_arg_prefix + "just_rotate"] != 0.0:
+        #     self.dist_thresh = 1.35 #Just set it to this
+        #     breakpoint()
+        # else:
+        #     self.dist_thresh = self._ori_dist_thresh
 
 
         self.skill_done = False
@@ -557,6 +558,12 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         #     return BaseVelNonCylinderAction.step(
         #         self, *args, is_last_action=is_last_action, **kwargs
         #     )
+
+        if (self._action_arg_prefix + "just_rotate" in kwargs) and kwargs[self._action_arg_prefix + "just_rotate"] != 0.0:
+            self.dist_thresh = 1.35 #Just set it to this
+            breakpoint()
+        else:
+            self.dist_thresh = self._ori_dist_thresh
 
 
         nav_to_target_idx = kwargs[
