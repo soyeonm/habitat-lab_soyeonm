@@ -49,6 +49,7 @@ class RearrangeEpisode(Episode):
     prompt: Dict[str, str] = {}
     load_from_json: str = ''
     load_from_json_ep_idx: str = ''
+    target_handles_to_move: List[str] = []
 
 
 
