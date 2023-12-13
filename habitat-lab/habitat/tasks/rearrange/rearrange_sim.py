@@ -422,7 +422,7 @@ class RearrangeSim(HabitatSim):
         navmesh_settings.set_defaults()
 
         if hasattr(self.habitat_config.agents, "agent_0"):
-            radius = self.habitat_config.agents.agent_0.radius
+            radius = self.habitat_config.agents.agent_0.radius #+ 0.2
             height = self.habitat_config.agents.agent_0.height
             max_climb = self.habitat_config.agents.agent_0.max_climb
         elif hasattr(self.habitat_config.agents, "main_agent"):

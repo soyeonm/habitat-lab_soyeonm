@@ -503,6 +503,7 @@ class BaseVelNonCylinderAction(ArticulatedAgentAction):
         )
         self._allow_back = self._config.allow_back
         self._collision_threshold = self._config.collision_threshold
+        #breakpoint()
         self._longitudinal_lin_speed = self._config.longitudinal_lin_speed
         self._lateral_lin_speed = self._config.lateral_lin_speed
         self._ang_speed = self._config.ang_speed
@@ -606,17 +607,29 @@ class BaseVelNonCylinderAction(ArticulatedAgentAction):
         )
         # We do sliding only if we allow the robot to do sliding and current
         # robot is not rotating
-        compute_sliding = self._allow_dyn_slide and not (
-            if_rotation and self._enable_rotation_check_for_dyn_slide
+        # compute_sliding = self._allow_dyn_slide and not (
+        #     if_rotation and self._enable_rotation_check_for_dyn_slide
+        # )
+        # # Check if there is a collision
+        # did_coll, new_target_trans = self.collision_check(
+        #     trans, target_trans, target_rigid_state, compute_sliding
+        # )
+        # self.last_did_col = did_coll #False #did_coll
+        self.cur_articulated_agent.sim_obj.transformation = target_trans
+
+        #Just added temporarily
+        # self._sim.internal_step(-1)
+        # colls = self._sim.get_collisions()
+        # did_coll, _ = rearrange_collision(
+        #     colls, self._sim.snapped_obj_id, False
+        # )
+        did_coll = self._sim.contact_test(
+            0#self._sim.articulated_agent.get_robot_sim_id()
         )
-        # Check if there is a collision
-        did_coll, new_target_trans = self.collision_check(
-            trans, target_trans, target_rigid_state, compute_sliding
-        )
-        self.last_did_col = did_coll
+        print("did col is ", did_coll)
 
         # Update the base
-        self.cur_articulated_agent.sim_obj.transformation = new_target_trans
+        #self.cur_articulated_agent.sim_obj.transformation = new_target_trans
 
         if self.cur_grasp_mgr.snap_idx is not None:
             # Holding onto an object, also kinematically update the object.
