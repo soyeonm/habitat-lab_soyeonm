@@ -627,6 +627,16 @@ class BaseVelNonCylinderAction(ArticulatedAgentAction):
             0#self._sim.articulated_agent.get_robot_sim_id()
         )
         print("did col is ", did_coll)
+        self._sim.internal_step(-1)
+        colls = self._sim.get_collisions()
+        did_coll, _ = rearrange_collision(
+            colls, self._sim.snapped_obj_id, False
+        )
+        if did_coll:
+            # Don't allow the step, revert back.
+            self._set_articulated_agent_state(before_trans_state)
+            self.cur_articulated_agent.sim_obj.transformation = trans
+        
 
         # Update the base
         #self.cur_articulated_agent.sim_obj.transformation = new_target_trans
