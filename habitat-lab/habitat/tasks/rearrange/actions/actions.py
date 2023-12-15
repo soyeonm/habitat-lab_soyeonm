@@ -647,8 +647,8 @@ class BaseVelNonCylinderAction(ArticulatedAgentAction):
             0#self._sim.articulated_agent.get_robot_sim_id()
         )
         print("did col is ", did_coll)
-        if did_coll:
-            self.cur_articulated_agent.sim_obj.transformation = trans
+        # if did_coll:
+        #     self.cur_articulated_agent.sim_obj.transformation = trans
 
         # Update the base
         #self.cur_articulated_agent.sim_obj.transformation = new_target_trans
