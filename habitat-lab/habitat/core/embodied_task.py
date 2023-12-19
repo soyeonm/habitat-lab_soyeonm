@@ -322,6 +322,7 @@ class EmbodiedTask:
         assert (
             action_name in self.actions
         ), f"Can't find '{action_name}' action in {self.actions.keys()}."
+        print('action name is ', action_name)
         task_action = self.actions[action_name]
         observations.update(
             task_action.step(
