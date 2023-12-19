@@ -641,7 +641,7 @@ class BaseVelNonCylinderAction(ArticulatedAgentAction):
         #     self._set_articulated_agent_state(before_trans_state)
         #     self.cur_articulated_agent.sim_obj.transformation = trans
 
-        self.cur_articulated_agent.sim_obj.transformation = target_trans
+        #self.cur_articulated_agent.sim_obj.transformation = target_trans
 
         did_coll = self._sim.contact_test(
             0#self._sim.articulated_agent.get_robot_sim_id()
@@ -712,6 +712,7 @@ class BaseVelNonCylinderAction(ArticulatedAgentAction):
             #             self._action_arg_prefix + "tele"
             #         ]
                 #self.cur_articulated_agent.base_pos = mn.Vector3([-7.86256298,  0.15955761, -2.78627963])
+        breakpoint()
         if is_last_action:
             return self._sim.step(HabitatSimActions.base_velocity)
         else:
