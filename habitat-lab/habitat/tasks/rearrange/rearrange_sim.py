@@ -560,7 +560,6 @@ class RearrangeSim(HabitatSim):
 
             print("new pos is ", new_pos)
             print("radius is ", radius)
-            breakpoint()
             if not(np.isnan(new_pos[0])) and not(found_path):
                 counter = 0
                 while not(found_path) and counter <100:

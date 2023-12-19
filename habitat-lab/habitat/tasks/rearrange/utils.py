@@ -483,20 +483,15 @@ def place_robot_at_closest_point_for_sem_map_with_navmesh(
     :return: The robot's start position, rotation, and whether the placement was a failure (True for failure, False for success).
     """
     navmesh_offset = [[0.0, 0.0], [0.15, 0.0], [-0.15, 0.0]]
-    breakpoint()
     if agent is None:
         agent = sim.articulated_agent
-    breakpoint()
     island_idx = get_largest_island_index(sim.pathfinder, sim, allow_outdoor=False)
-    breakpoint()
     agent_pos = sim.safe_snap_point_with_radius(agent.base_pos, island_idx, target_position, start_radius=0.5, end_radius=6.5, rad_delta=0.5) #sim.safe_snap_point_with_radius(island_idx, target_position, radius)
-    breakpoint()
     if not sim.is_point_within_bounds(target_position):
         rearrange_logger.error(
             f"Object {target_position} is out of bounds but trying to set robot position to {agent_pos}"
         )
     desired_angle = get_angle_to_pos(np.array(target_position - agent_pos))
-    breakpoint()
     #breakpoint()
     # Cache the initial location of the agent
     cache_pos = agent.base_pos
