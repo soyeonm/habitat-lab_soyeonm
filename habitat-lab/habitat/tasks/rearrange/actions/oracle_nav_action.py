@@ -639,6 +639,8 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 if not(self.spot_init_failed):
                     while not(found_path):
                         print("here 3")
+                        print("counter ", counter)
+                        print("timestep ", self.timestep)
                         # final_nav_targ, _, _ = place_robot_at_closest_point(
                         # obj_targ_pos, self._sim, agent=self.cur_articulated_agent)
                         #final_nav_targ, _, _ = place_robot_at_closest_point_for_sem_map(obj_targ_pos, self._sim, agent=self.cur_articulated_agent)
