@@ -557,6 +557,8 @@ class RearrangeSim(HabitatSim):
             path.requested_end = new_pos
             found_path = self.pathfinder.find_path(path)
             print("new pos is ", new_pos)
+            print("radius is ", radius)
+            breakpoint()
             if not(np.isnan(new_pos[0])) and not(found_path):
                 while not(found_path):
                     new_pos = self.pathfinder.get_random_navigable_point_near(pos, radius, 1000, island_idx)
