@@ -492,7 +492,7 @@ def place_robot_at_closest_point_for_sem_map_with_navmesh(
             f"Object {target_position} is out of bounds but trying to set robot position to {agent_pos}"
         )
     desired_angle = get_angle_to_pos(np.array(target_position - agent_pos))
-
+    breakpoint()
     #breakpoint()
     # Cache the initial location of the agent
     cache_pos = agent.base_pos
@@ -504,6 +504,7 @@ def place_robot_at_closest_point_for_sem_map_with_navmesh(
     nav_pos_3d = [
         np.array([xz[0], cache_pos[1], xz[1]]) for xz in navmesh_offset
     ]
+
     # Do transformation to get the location
     center_pos_list = [trans.transform_point(xyz) for xyz in nav_pos_3d]
 
