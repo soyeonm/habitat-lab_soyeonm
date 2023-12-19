@@ -898,6 +898,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 print("vel was ", vel)
                 kwargs[f"{self._action_arg_prefix}base_vel"] = np.array(vel)
                 kwargs[f"{self._action_arg_prefix}tele"] = final_nav_targ #obj_targ_pos
+                breakpoint()
                 return BaseVelNonCylinderAction.step(
                     self, *args, is_last_action=is_last_action, **kwargs
                 )
