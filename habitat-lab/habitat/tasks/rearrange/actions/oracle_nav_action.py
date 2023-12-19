@@ -549,7 +549,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         self.collided_rot = False
         self.collided_for = False
         self.collided_lat = False
-
+        breakpoint()
 
         # if (self._action_arg_prefix + "just_rotate" in kwargs) and kwargs[self._action_arg_prefix + "just_rotate"] != 0.0:
         #     vel = [0, 0, self._config.turn_velocity]
@@ -570,7 +570,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
             self.dist_thresh = 1.35 #Just set it to this
         else:
             self.dist_thresh = self._ori_dist_thresh
-
+        breakpoint()
 
         nav_to_target_idx = kwargs[
             self._action_arg_prefix + "oracle_nav_with_backing_up_action"
@@ -587,7 +587,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
 
             #Just retyrn
 
-
+        breakpoint()
         #Make human move
         if isinstance(nav_to_target_idx, np.ndarray) and nav_to_target_idx[0]==np.inf:
             return
@@ -713,7 +713,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         self.prev_obj_targ_pos = copy.deepcopy(obj_targ_pos)
         self.prev_final_nav_targ = copy.deepcopy(final_nav_targ)
         self.timestep +=1
-
+        breakpoint()
         if self._sim.num_articulated_agents > 1:
             # This is very specific to SIRo. Careful merging
             _robot_pos = np.array(
@@ -902,6 +902,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 print("vel was ", vel)
                 kwargs[f"{self._action_arg_prefix}base_vel"] = np.array(vel)
                 kwargs[f"{self._action_arg_prefix}tele"] = final_nav_targ #obj_targ_pos
+                breakpoint()
                 return BaseVelNonCylinderAction.step(
                     self, *args, is_last_action=is_last_action, **kwargs
                 )
