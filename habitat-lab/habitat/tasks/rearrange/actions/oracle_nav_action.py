@@ -582,7 +582,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 else:
                     return {}
 
-        print("here 1")
+        #print("here 1")
             #Just retyrn
 
         #Make human move
@@ -630,7 +630,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
             #     self.spot_init_failed = True
             #breakpoint()
             if np.linalg.norm((obj_targ_pos - self.prev_obj_targ_pos)[[0, 2]])<=0.1: 
-                print("here 2")
+                #print("here 2")
                 final_nav_targ = self.prev_final_nav_targ
             else:
                 final_nav_targ = obj_targ_pos
@@ -638,9 +638,9 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 found_path = self.found_path(final_nav_targ)
                 if not(self.spot_init_failed):
                     while not(found_path):
-                        print("here 3")
-                        print("counter ", counter)
-                        print("timestep ", self.timestep)
+                        #print("here 3")
+                        #print("counter ", counter)
+                        #print("timestep ", self.timestep)
                         # final_nav_targ, _, _ = place_robot_at_closest_point(
                         # obj_targ_pos, self._sim, agent=self.cur_articulated_agent)
                         #final_nav_targ, _, _ = place_robot_at_closest_point_for_sem_map(obj_targ_pos, self._sim, agent=self.cur_articulated_agent)
@@ -672,7 +672,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 # place_robot_at_closest_point_with_navmesh(
                 final_nav_targ = np.array(final_nav_targ)
             #print("Placed!")
-            print("here 4")
+            #print("here 4")
             robot_rot = float(self.cur_articulated_agent.base_rot)
             robot_pos = np.array(self.cur_articulated_agent.base_pos)
             if self.timestep>=0:
@@ -695,7 +695,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
             )
         # Get the base transformation
         base_T = self.cur_articulated_agent.base_transformation
-        print("here 5")
+        #print("here 5")
         # Get the current path
         curr_path_points = self._path_to_point(final_nav_targ)
         # Get the robot position
