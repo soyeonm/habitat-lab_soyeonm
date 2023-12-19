@@ -657,7 +657,7 @@ class BaseVelNonCylinderAction(ArticulatedAgentAction):
 
         # Update the base
         #self.cur_articulated_agent.sim_obj.transformation = new_target_trans
-
+        breakpoint()
         if self.cur_grasp_mgr.snap_idx is not None:
             # Holding onto an object, also kinematically update the object.
             # object.
@@ -670,6 +670,7 @@ class BaseVelNonCylinderAction(ArticulatedAgentAction):
             )
 
     def step(self, *args, is_last_action, **kwargs):
+        breakpoint()
         lateral_lin_vel = 0.0
         if self._enable_lateral_move:
             longitudinal_lin_vel, lateral_lin_vel, ang_vel = kwargs[
@@ -712,7 +713,6 @@ class BaseVelNonCylinderAction(ArticulatedAgentAction):
             #             self._action_arg_prefix + "tele"
             #         ]
                 #self.cur_articulated_agent.base_pos = mn.Vector3([-7.86256298,  0.15955761, -2.78627963])
-        breakpoint()
         if is_last_action:
             return self._sim.step(HabitatSimActions.base_velocity)
         else:
