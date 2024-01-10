@@ -596,6 +596,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 move_freely = True
                 #action_to_take = kwargs[self._action_arg_prefix + "oracle_nav_with_backing_up_action"]
             else:
+                breakpoint()
                 raise Exception("what is this")
         if move_freely:
             #same as self._get_target_for_idx
