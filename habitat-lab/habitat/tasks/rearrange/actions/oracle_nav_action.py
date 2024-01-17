@@ -571,7 +571,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
             self.dist_thresh = self._ori_dist_thresh
 
         if (self._action_arg_prefix + "human_follow" in kwargs) and kwargs[self._action_arg_prefix + "human_follow"] != 0.0:
-            self.dist_thresh = 0.0 #Just set it to this
+            self.dist_thresh = 0.5 #0.0 #Just set it to this
         else:
             self.dist_thresh = self._ori_dist_thresh
 
