@@ -570,6 +570,12 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         else:
             self.dist_thresh = self._ori_dist_thresh
 
+        if (self._action_arg_prefix + "human_follow" in kwargs) and kwargs[self._action_arg_prefix + "human_follow"] != 0.0:
+            self.dist_thresh = 0.0 #Just set it to this
+        else:
+            self.dist_thresh = self._ori_dist_thresh
+
+
         nav_to_target_idx = kwargs[
             self._action_arg_prefix + "oracle_nav_with_backing_up_action"
         ] #something like array([3.], dtype=float32) if original (not move freely, not human)
