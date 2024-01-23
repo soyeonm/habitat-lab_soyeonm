@@ -356,7 +356,6 @@ class HabitatSim(habitat_sim.Simulator, Simulator):
         sim_config.navmesh_settings.set_defaults()
         sim_config.navmesh_settings.agent_radius = agent_config.radius
         sim_config.navmesh_settings.agent_height = agent_config.height
-        breakpoint()
         
         sensor_specifications = []
         for sensor in _sensor_suite.sensors.values():
