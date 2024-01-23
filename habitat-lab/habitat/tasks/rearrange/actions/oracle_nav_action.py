@@ -711,10 +711,10 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         self.last_rot = robot_rot
         self.last_pos = robot_pos
 
-        print("robot_pos",robot_pos)
-        print("obj_targ_pos", obj_targ_pos)
-        print("final nav targ", final_nav_targ)
-        print("curr_path_points", curr_path_points)
+        # print("robot_pos",robot_pos)
+        # print("obj_targ_pos", obj_targ_pos)
+        # print("final nav targ", final_nav_targ)
+        # print("curr_path_points", curr_path_points)
 
         # Get the current robot/human pos assuming human is agent 1
         robot_human_dis = None
@@ -789,10 +789,12 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 dist_to_final_nav_targ < self.dist_thresh
                 and angle_to_obj < self._config.turn_thresh
             ) or (self.at_goal_prev and dist_to_final_nav_targ < self._config.dist_thresh)
-            print("at goal ", at_goal)
-            print("dist_to_final_nav_targ", dist_to_final_nav_targ)
-            print("angle_to_obj", angle_to_obj)
-            print("angle_to_target", angle_to_target)
+
+            if self._action_arg_prefix == 'agent_0_':
+                print("at goal ", at_goal)
+                print("dist_to_final_nav_targ", dist_to_final_nav_targ)
+            # print("angle_to_obj", angle_to_obj)
+            # print("angle_to_target", angle_to_target)
             #breakpoint()
 
             # Planning to see if the robot needs to do back-up
@@ -832,7 +834,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                     dist_to_final_nav_targ < self._config.dist_thresh
                     and angle_to_obj < self._config.turn_thresh
                 )
-            print("turn thresh is ",  self._config.turn_thresh)
+            # print("turn thresh is ",  self._config.turn_thresh)
             if self.motion_type == "base_velocity":
                 self.cur_articulated_agent.at_goal_ona = at_goal
                 if not at_goal:
@@ -906,7 +908,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 #     breakpoint()
                 self.last_vel = vel
                 #breakpoint()
-                print("vel was ", vel)
+                #print("vel was ", vel)
                 kwargs[f"{self._action_arg_prefix}base_vel"] = np.array(vel)
                 kwargs[f"{self._action_arg_prefix}tele"] = final_nav_targ #obj_targ_pos
                 return BaseVelNonCylinderAction.step(
