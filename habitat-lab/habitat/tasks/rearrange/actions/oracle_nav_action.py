@@ -790,7 +790,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 and angle_to_obj < self._config.turn_thresh
             ) or (self.at_goal_prev and dist_to_final_nav_targ < self._config.dist_thresh)
 
-            if self._action_arg_prefix == 'agent_0_':
+            if self._action_arg_prefix == 'agent_1_':
                 print("at goal ", at_goal)
                 print("dist_to_final_nav_targ", dist_to_final_nav_targ)
             # print("angle_to_obj", angle_to_obj)
