@@ -917,6 +917,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
 
             elif self.motion_type == "human_joints":
                 # Update the humanoid base
+                self.cur_articulated_agent.at_goal_ona = at_goal
                 self.humanoid_controller.obj_transform_base = base_T
                 if not at_goal:
                     self.at_goal = False
