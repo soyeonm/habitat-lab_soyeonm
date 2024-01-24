@@ -316,7 +316,6 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
 
                 elif self.motion_type == "human_joints":
                     # Update the humanoid base
-                    breakpoint()
                     self.humanoid_controller.obj_transform_base = base_T
                     if not at_goal:
                         if dist_to_final_nav_targ < self._dist_thresh:
@@ -550,6 +549,9 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         self.collided_rot = False
         self.collided_for = False
         self.collided_lat = False
+
+        if self._action_arg_prefix == 'agent_1_':
+            self.cur_articulated_agent.at_goal_ona = False
 
         # if (self._action_arg_prefix + "just_rotate" in kwargs) and kwargs[self._action_arg_prefix + "just_rotate"] != 0.0:
         #     vel = [0, 0, self._config.turn_velocity]
@@ -794,6 +796,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
             if self._action_arg_prefix == 'agent_1_':
                 print("at goal ", at_goal)
                 print("dist_to_final_nav_targ", dist_to_final_nav_targ)
+                #self.cur_articulated_agent.at_goal_ona = False
             # print("angle_to_obj", angle_to_obj)
             # print("angle_to_target", angle_to_target)
             #breakpoint()
@@ -918,7 +921,6 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
 
             elif self.motion_type == "human_joints":
                 # Update the humanoid base
-                breakpoint()
                 self.cur_articulated_agent.at_goal_ona = at_goal
                 self.humanoid_controller.obj_transform_base = base_T
                 if not at_goal:
