@@ -549,9 +549,8 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         self.collided_rot = False
         self.collided_for = False
         self.collided_lat = False
-
-        if self._action_arg_prefix == 'agent_1_':
-            self.cur_articulated_agent.at_goal_ona = False
+        # if self._action_arg_prefix == 'agent_1_':
+        #     self.cur_articulated_agent.at_goal_ona = False
 
         # if (self._action_arg_prefix + "just_rotate" in kwargs) and kwargs[self._action_arg_prefix + "just_rotate"] != 0.0:
         #     vel = [0, 0, self._config.turn_velocity]
