@@ -852,12 +852,12 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                         #     vel = [0, 0, 0]
                         #     self.forward_side_step_try = -1
                         #breakpoint()
-                    elif self.collided_rot:
-                        #vel = -1. * self.last_vel
-                        if self.last_vel[2] >0 : #if rotated left in the last vel, do lateral right
-                            vel = [0, self._config.forward_velocity, 0] #[0, -self._config.turn_velocity]
-                        else:  # lateral left
-                            vel = [0, -self._config.forward_velocity, 0]
+                    # elif self.collided_rot:
+                    #     #vel = -1. * self.last_vel
+                    #     if self.last_vel[2] >0 : #if rotated left in the last vel, do lateral right
+                    #         vel = [0, self._config.forward_velocity, 0] #[0, -self._config.turn_velocity]
+                    #     else:  # lateral left
+                    #         vel = [0, -self._config.forward_velocity, 0]
                     elif self.collided_lat:
                         #move backward and lateral at the same time
                         #vel = [-self._config.forward_velocity, self.last_vel[1], 0]
