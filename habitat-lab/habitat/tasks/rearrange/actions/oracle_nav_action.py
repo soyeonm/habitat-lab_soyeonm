@@ -843,28 +843,28 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 if not at_goal:
                     self.at_goal = False
                     self.at_goal_prev = False
-                    if self.collided_for or self.forward_side_step_try>=1: #side step in the direction that makes sense
-                        #if self.forward_side_step_try ==0:
-                        vel = [0, 0, 0]
-                        #self.forward_side_step_try +=1
-                        self.cur_articulated_agent.base_pos = cur_nav_targ
-                        # elif self.forward_side_step_try ==1:
-                        #     vel = [0, 0, 0]
-                        #     self.forward_side_step_try = -1
-                        #breakpoint()
-                    # elif self.collided_rot:
-                    #     #vel = -1. * self.last_vel
-                    #     if self.last_vel[2] >0 : #if rotated left in the last vel, do lateral right
-                    #         vel = [0, self._config.forward_velocity, 0] #[0, -self._config.turn_velocity]
-                    #     else:  # lateral left
-                    #         vel = [0, -self._config.forward_velocity, 0]
-                    elif self.collided_lat:
-                        #move backward and lateral at the same time
-                        #vel = [-self._config.forward_velocity, self.last_vel[1], 0]
-                        vel = [0, 0, 0]
-                        #self.forward_side_step_try +=1
-                        self.cur_articulated_agent.base_pos = cur_nav_targ
-                    elif dist_to_final_nav_targ < self._config.dist_thresh:
+                    # if self.collided_for or self.forward_side_step_try>=1: #side step in the direction that makes sense
+                    #     #if self.forward_side_step_try ==0:
+                    #     vel = [0, 0, 0]
+                    #     #self.forward_side_step_try +=1
+                    #     self.cur_articulated_agent.base_pos = cur_nav_targ
+                    #     # elif self.forward_side_step_try ==1:
+                    #     #     vel = [0, 0, 0]
+                    #     #     self.forward_side_step_try = -1
+                    #     #breakpoint()
+                    # # elif self.collided_rot:
+                    # #     #vel = -1. * self.last_vel
+                    # #     if self.last_vel[2] >0 : #if rotated left in the last vel, do lateral right
+                    # #         vel = [0, self._config.forward_velocity, 0] #[0, -self._config.turn_velocity]
+                    # #     else:  # lateral left
+                    # #         vel = [0, -self._config.forward_velocity, 0]
+                    # elif self.collided_lat:
+                    #     #move backward and lateral at the same time
+                    #     #vel = [-self._config.forward_velocity, self.last_vel[1], 0]
+                    #     vel = [0, 0, 0]
+                    #     #self.forward_side_step_try +=1
+                    #     self.cur_articulated_agent.base_pos = cur_nav_targ
+                    if dist_to_final_nav_targ < self._config.dist_thresh:
                         # Look at the object
                         vel = OracleNavAction._compute_turn(
                             rel_pos, self._config.turn_velocity, robot_forward
