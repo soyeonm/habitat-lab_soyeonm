@@ -40,6 +40,17 @@ class RearrangeEpisode(Episode):
     target_receptacles: List[Tuple[str, int]] = []
     goal_receptacles: List[Tuple[str, int]] = []
     name_to_receptacle: Dict[str, str] = {}
+    #Just add these properties
+    #from generate_and_assign_prompts.py
+    original_json: str = ''
+    original_json_episode_idx: str = ''
+    scripted_actions_path: str = ''
+    recep: str = ''
+    prompt: Dict[str, str] = {}
+    load_from_json: str = ''
+    load_from_json_ep_idx: str = ''
+    target_handles_to_move: List[str] = []
+    is_unique_true: List[Any] = []
 
 
 @registry.register_dataset(name="RearrangeDataset-v0")
