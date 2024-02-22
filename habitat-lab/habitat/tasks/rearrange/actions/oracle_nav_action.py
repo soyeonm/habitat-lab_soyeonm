@@ -285,6 +285,8 @@ class OracleNavAction(BaseVelAction, HumanoidJointAction):
                 dist_to_final_nav_targ = np.linalg.norm(
                     (final_nav_targ - robot_pos)[[0, 2]]
                 )
+
+
                 at_goal = (
                     dist_to_final_nav_targ < self._dist_thresh
                     and angle_to_obj < self._turn_thresh
@@ -796,6 +798,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 print("Human at goal ", at_goal)
                 print("Human dist_to_final_nav_targ", dist_to_final_nav_targ)
                 print("Human angle_to_target", angle_to_target)
+                breakpoint()
 
             if self._action_arg_prefix == 'agent_0_':
                 print("at goal ", at_goal)
