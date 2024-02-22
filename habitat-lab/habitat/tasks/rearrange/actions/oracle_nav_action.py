@@ -798,7 +798,7 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
                 print("Human at goal ", at_goal)
                 print("Human dist_to_final_nav_targ", dist_to_final_nav_targ)
                 print("Human angle_to_target", angle_to_target)
-                breakpoint()
+                #breakpoint()
 
             if self._action_arg_prefix == 'agent_0_':
                 print("at goal ", at_goal)
