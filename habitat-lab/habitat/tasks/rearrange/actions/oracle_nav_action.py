@@ -775,7 +775,12 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
             cur_nav_targ = curr_path_points[1]
             forward = np.array([1.0, 0, 0])
             robot_forward = np.array(base_T.transform_vector(forward))
+            if self._action_arg_prefix == 'agent_1_':
+                print("agent 1 pos ", robot_pos)
 
+
+            if self._action_arg_prefix == 'agent_0_':
+                print("agent 0 pos ", robot_pos)
             # Compute relative target
             rel_targ = cur_nav_targ - robot_pos
 
