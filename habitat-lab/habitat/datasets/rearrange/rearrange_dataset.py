@@ -51,6 +51,7 @@ class RearrangeEpisode(Episode):
     load_from_json_ep_idx: str = ''
     target_handles_to_move: List[str] = []
     is_unique_true: List[Any] = []
+    step1_filter_valid: str=''
 
 
 
