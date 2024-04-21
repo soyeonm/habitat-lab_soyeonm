@@ -52,6 +52,7 @@ class RearrangeEpisode(Episode):
     target_handles_to_move: List[str] = []
     is_unique_true: List[Any] = []
     step1_filter_valid: str=''
+    oracle_filter_valid: str=''
 
 
 
