@@ -53,6 +53,7 @@ class RearrangeEpisode(Episode):
     is_unique_true: List[Any] = []
     step1_filter_valid: str=''
     oracle_filter_valid: str=''
+    sif_params: Dict[str, str] = {}
 
 
 
