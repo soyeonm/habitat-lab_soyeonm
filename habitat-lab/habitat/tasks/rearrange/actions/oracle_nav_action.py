@@ -583,14 +583,17 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         nav_to_target_idx = kwargs[
             self._action_arg_prefix + "oracle_nav_with_backing_up_action"
         ] #something like array([3.], dtype=float32) if original (not move freely, not human)
-        if nav_to_target_idx.shape == (1,):
-            if  nav_to_target_idx <= 0 or nav_to_target_idx > len(
-                self._poss_entities
-            ):
-                if is_last_action:
-                    return self._sim.step(HabitatSimActions.base_velocity)
-                else:
-                    return {}
+        try:
+            if nav_to_target_idx.shape == (1,):
+                if  nav_to_target_idx <= 0 or nav_to_target_idx > len(
+                    self._poss_entities
+                ):
+                    if is_last_action:
+                        return self._sim.step(HabitatSimActions.base_velocity)
+                    else:
+                        return {}
+        except:
+            breakpoint()
 
         #print("here 1")
             #Just retyrn
