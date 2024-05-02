@@ -574,29 +574,20 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         else:
             self.dist_thresh = self._ori_dist_thresh
 
-        # if (self._action_arg_prefix + "human_follow" in kwargs) and kwargs[self._action_arg_prefix + "human_follow"] != 0.0:
-        #     self.dist_thresh = 0.75 #0.5 #0.0 #Just set it to this
-        # else:
-        #     self.dist_thresh = self._ori_dist_thresh
+
 
 
         nav_to_target_idx = kwargs[
             self._action_arg_prefix + "oracle_nav_with_backing_up_action"
         ] #something like array([3.], dtype=float32) if original (not move freely, not human)
-        try:
-            if nav_to_target_idx.shape == (1,):
-                if  nav_to_target_idx <= 0 or nav_to_target_idx > len(
-                    self._poss_entities
-                ):
-                    if is_last_action:
-                        return self._sim.step(HabitatSimActions.base_velocity)
-                    else:
-                        return {}
-        except:
-            breakpoint()
-
-        #print("here 1")
-            #Just retyrn
+        if nav_to_target_idx.shape == (1,):
+            if  nav_to_target_idx <= 0 or nav_to_target_idx > len(
+                self._poss_entities
+            ):
+                if is_last_action:
+                    return self._sim.step(HabitatSimActions.base_velocity)
+                else:
+                    return {}
 
         #Make human move
         if isinstance(nav_to_target_idx, np.ndarray) and nav_to_target_idx[0]==np.inf:
@@ -613,35 +604,6 @@ class OracleNavWithBackingUpAction(BaseVelNonCylinderAction, OracleNavAction):  
         if move_freely:
             #same as self._get_target_for_idx
             obj_targ_pos = kwargs[self._action_arg_prefix + "oracle_nav_with_backing_up_action"] #goal_pose or stg pose from objectgoal_env  really
-            # final_nav_targ, _, _ = place_agent_at_dist_from_pos(
-            #         np.array(obj_targ_pos),
-            #         0.0,
-            #         -1.0, #None, #-1.0, #self._spawn_max_dist_to_obj,
-            #         self._sim,
-            #         self._num_spawn_attempts,
-            #         1,
-            #         self.cur_articulated_agent,
-            #         self._navmesh_offset_for_agent_placement,
-            #         #None,
-            #     )
-            # while not(self.found_path(final_nav_targ)):
-            #     final_nav_targ, _, _ = place_agent_at_dist_from_pos(
-            #         np.array(obj_targ_pos),
-            #         0.0,
-            #         -1.0, #None, #-1.0, #self._spawn_max_dist_to_obj,
-            #         self._sim,
-            #         self._num_spawn_attempts,
-            #         1,
-            #         self.cur_articulated_agent,
-            #         self._navmesh_offset_for_agent_placement,
-            #         #None,
-            #     )
-            #Replace to just sample until 
-            #don't replan!
-            #breakpoint()
-            # if self.ep_num==0:
-            #     self.spot_init_failed = True
-            #breakpoint()
             if np.linalg.norm((obj_targ_pos - self.prev_obj_targ_pos)[[0, 2]])<=0.1: 
                 #print("here 2")
                 final_nav_targ = self.prev_final_nav_targ
