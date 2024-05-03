@@ -333,7 +333,7 @@ class EmbodiedTask:
                 )
         )
         except:
-            pass
+            breakpoint()
 
     #Just added for my purpsoe
     def any_target_1_visible_gt(self, panoptic):
