@@ -319,21 +319,20 @@ class EmbodiedTask:
     ):
         if isinstance(action_name, (int, np.integer)):
             action_name = self.get_action_name(action_name)
-        try:
-            assert (
-                action_name in self.actions
-            ), f"Can't find '{action_name}' action in {self.actions.keys()}."
-            #print('action name is ', action_name)
-            task_action = self.actions[action_name]
-            observations.update(
-                task_action.step(
-                    **action["action_args"],
-                    task=self,
-                    is_last_action=is_last_action,
-                )
+        breakpoint()
+        assert (
+            action_name in self.actions
+        ), f"Can't find '{action_name}' action in {self.actions.keys()}."
+        #print('action name is ', action_name)
+        task_action = self.actions[action_name]
+        observations.update(
+            task_action.step(
+                **action["action_args"],
+                task=self,
+                is_last_action=is_last_action,
+            )
         )
-        except:
-            breakpoint()
+            
 
     #Just added for my purpsoe
     def any_target_1_visible_gt(self, panoptic):
