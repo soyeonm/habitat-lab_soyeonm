@@ -319,7 +319,6 @@ class EmbodiedTask:
     ):
         if isinstance(action_name, (int, np.integer)):
             action_name = self.get_action_name(action_name)
-        breakpoint()
         assert (
             action_name in self.actions
         ), f"Can't find '{action_name}' action in {self.actions.keys()}."
