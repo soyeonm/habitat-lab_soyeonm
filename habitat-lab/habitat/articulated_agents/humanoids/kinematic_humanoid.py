@@ -45,6 +45,11 @@ class KinematicHumanoid(MobileManipulator):
                     cam_look_at_pos=mn.Vector3(1, 0.0, 0.75),
                     attached_link_id=-2,
                 ),
+                "third_panoptic": ArticulatedAgentCameraParams(
+                    cam_offset_pos=mn.Vector3(-0.7, 1.4, -0.7),
+                    cam_look_at_pos=mn.Vector3(1, 0.0, 0.75),
+                    attached_link_id=-2,
+                ),
             },
             arm_mtr_pos_gain=0.3,
             arm_mtr_vel_gain=0.3,

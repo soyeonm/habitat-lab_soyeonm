@@ -1403,6 +1403,12 @@ class HeadPanopticSensorConfig(HabitatSimSemanticSensorConfig):
 
 
 @dataclass
+class ThirdPanopticSensorConfig(HabitatSimSemanticSensorConfig):
+    uuid: str = "third_panoptic"
+    width: int = 256
+    height: int = 256
+
+@dataclass
 class ArmPanopticSensorConfig(HabitatSimSemanticSensorConfig):
     uuid: str = "articulated_agent_arm_panoptic"
     width: int = 256
@@ -1928,6 +1934,12 @@ cs.store(
     group="habitat/simulator/sim_sensors",
     name="head_panoptic_sensor",
     node=HeadPanopticSensorConfig,
+)
+
+cs.store(
+    group="habitat/simulator/sim_sensors",
+    name="third_panoptic_sensor",
+    node=ThirdPanopticSensorConfig,
 )
 
 cs.store(
