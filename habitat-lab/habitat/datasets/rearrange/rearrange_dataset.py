@@ -46,7 +46,7 @@ class RearrangeEpisode(Episode):
     original_json_episode_idx: str = ''
     scripted_actions_path: str = ''
     recep: str = ''
-    prompt: Dict[str, str] = {}
+    prompt_old: Dict[str, str] = {}
     load_from_json: str = ''
     load_from_json_ep_idx: str = ''
     target_handles_to_move: List[str] = []
@@ -54,6 +54,7 @@ class RearrangeEpisode(Episode):
     step1_filter_valid: str=''
     oracle_filter_valid: str=''
     sif_params: Dict[str, str] = {}
+
 
 
 
