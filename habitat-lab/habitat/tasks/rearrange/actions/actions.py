@@ -434,10 +434,10 @@ class BaseVelAction(ArticulatedAgentAction):
         # did_coll, _ = rearrange_collision(
         #     colls, self._sim.snapped_obj_id, False
         # )
-        did_coll = self._sim.contact_test(
-            0#self._sim.articulated_agent.get_robot_sim_id()
-        )
-        print("did col is ", did_coll)
+        # did_coll = self._sim.contact_test(
+        #     0#self._sim.articulated_agent.get_robot_sim_id()
+        # )
+        # print("did col is ", did_coll)
 
         if not self._allow_dyn_slide:
             # Check if in the new articulated_agent state the arm collides with anything.
@@ -643,10 +643,10 @@ class BaseVelNonCylinderAction(ArticulatedAgentAction):
 
         #self.cur_articulated_agent.sim_obj.transformation = target_trans
 
-        did_coll = self._sim.contact_test(
-            0#self._sim.articulated_agent.get_robot_sim_id()
-        )
-        print("did col is ", did_coll)
+        # did_coll = self._sim.contact_test(
+        #     0#self._sim.articulated_agent.get_robot_sim_id()
+        # )
+        # print("did col is ", did_coll)
         # if did_coll:
         #     self.cur_articulated_agent.sim_obj.transformation = trans
 
