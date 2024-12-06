@@ -664,8 +664,8 @@ class RearrangeSim(HabitatSim):
         obj_attr_mgr = self.get_object_template_manager()
 
         # Enable BB render for the debug render call.
-        for obj_id in self._draw_bb_objs:
-            self.set_object_bb_draw(True, obj_id)
+        # for obj_id in self._draw_bb_objs:
+        #     self.set_object_bb_draw(True, obj_id)
 
         if self._debug_render_goal:
             for target_handle, transform in self._targets.items():
@@ -681,7 +681,7 @@ class RearrangeSim(HabitatSim):
                 ro = rom.add_object_by_template_handle(
                     list(matching_templates.keys())[0]
                 )
-                self.set_object_bb_draw(True, ro.object_id)
+                #self.set_object_bb_draw(True, ro.object_id)
                 ro.transformation = transform
                 make_render_only(ro, self)
                 bb = get_aabb(ro.object_id, self, True)
@@ -818,8 +818,8 @@ class RearrangeSim(HabitatSim):
             self._try_acquire_context()
 
             # Disable BB drawing for observation render
-            for obj_id in self._draw_bb_objs:
-                self.set_object_bb_draw(False, obj_id)
+            # for obj_id in self._draw_bb_objs:
+            #     self.set_object_bb_draw(False, obj_id)
 
             # Remove viz objects
             for obj in self._viz_objs.values():
